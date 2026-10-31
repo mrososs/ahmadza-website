@@ -11,3 +11,6 @@ blob-report
 .impeccable/hook.cache.json
 .agents/skills/
 *.log
+
+.vercel
+.env*
