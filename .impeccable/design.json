@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "direction": "Contemporary Accession Folio",
+  "mode": "read",
+  "tokens": {
+    "colors": {
+      "paper": "#F5F0E6",
+      "paperRaised": "#FFFDF8",
+      "parchment": "#E9DFCC",
+      "ink": "#1D241F",
+      "inkMuted": "#5E665F",
+      "forest": "#173F34",
+      "forestLight": "#DDE8E1",
+      "brass": "#A77C32",
+      "error": "#A23D32"
+    },
+    "fonts": {
+      "ui": "IBM Plex Sans Arabic",
+      "editorial": "Noto Naskh Arabic"
+    },
+    "radius": { "sheet": "2px", "control": "8px", "media": "12px" }
+  }
+}

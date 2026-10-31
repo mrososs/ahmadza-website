@@ -1,0 +1,55 @@
+import tailwindcss from '@tailwindcss/vite'
+
+export default defineNuxtConfig({
+  compatibilityDate: '2026-10-31',
+  devtools: { enabled: true },
+  modules: ['@nuxt/image', '@nuxtjs/sitemap'],
+  css: [
+    '@fontsource/ibm-plex-sans-arabic/400.css',
+    '@fontsource/ibm-plex-sans-arabic/500.css',
+    '@fontsource/ibm-plex-sans-arabic/600.css',
+    '@fontsource/ibm-plex-sans-arabic/700.css',
+    '@fontsource/noto-naskh-arabic/400.css',
+    '@fontsource/noto-naskh-arabic/600.css',
+    '@fontsource/noto-naskh-arabic/700.css',
+    '~/assets/css/main.css',
+  ],
+  vite: { plugins: [tailwindcss()] },
+  app: {
+    head: {
+      htmlAttrs: { lang: 'ar', dir: 'rtl' },
+      meta: [
+        { name: 'theme-color', content: '#173f34' },
+        { name: 'color-scheme', content: 'light' },
+      ],
+      link: [{ rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
+    },
+  },
+  runtimeConfig: {
+    supabaseUrl: '',
+    supabasePublishableKey: '',
+    public: {
+      siteUrl: 'https://prof-ahmadza.com',
+      siteName: 'مكتبة أحمد زايد الرقمية',
+    },
+  },
+  site: {
+    url: process.env.NUXT_PUBLIC_SITE_URL || 'https://prof-ahmadza.com',
+    name: 'مكتبة أحمد زايد الرقمية',
+  },
+  sitemap: { sources: ['/api/__sitemap__/urls'] },
+  routeRules: {
+    '/': { prerender: true },
+    '/about': { prerender: true },
+    '/articles/**': { swr: 3600 },
+    '/books/**': { swr: 3600 },
+    '/sermons/**': { swr: 3600 },
+    '/audio/**': { swr: 3600 },
+    '/benefits/**': { swr: 3600 },
+    '/videos': { swr: 3600 },
+  },
+  nitro: {
+    prerender: { crawlLinks: true, routes: ['/robots.txt'] },
+  },
+  typescript: { typeCheck: true, strict: true },
+})

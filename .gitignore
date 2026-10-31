@@ -1,0 +1,13 @@
+.nuxt
+.output
+node_modules
+.env
+.env.*
+!.env.example
+playwright-report
+test-results
+blob-report
+.impeccable/config.local.json
+.impeccable/hook.cache.json
+.agents/skills/
+*.log
