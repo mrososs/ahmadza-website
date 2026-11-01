@@ -1,13 +1,8 @@
-import type { Category, ContentItem } from '~/types/content'
+import type { ContentItem } from '~/types/content'
+import { demoNotice, family, history, language, learning, lessons, occasions, society, studies, summaries, talks, thought, values } from '~/data/demo-shared'
+import { seededDemoContent } from '~/data/demo-seeds'
 
-const thought: Category = { id: 'cat-thought', slug: 'thought', name: 'الفكر والمنهج' }
-const learning: Category = { id: 'cat-learning', slug: 'learning', name: 'التعلّم والقراءة' }
-const values: Category = { id: 'cat-values', slug: 'values', name: 'القيم والسلوك' }
-const society: Category = { id: 'cat-society', slug: 'society', name: 'المجتمع' }
-
-const demoNotice = 'هذا نص تجريبي مخصّص لمعاينة التصميم وتدفق القراءة، وسيُستبدل بالمادة العلمية المراجعة عند تزويد المشروع بالمحتوى الحقيقي.'
-
-export const demoContent: readonly ContentItem[] = [
+const coreDemoContent: readonly ContentItem[] = [
   {
     id: 'article-reading-method',
     type: 'article',
@@ -204,4 +199,6 @@ export const demoContent: readonly ContentItem[] = [
   },
 ]
 
-export const demoCategories = [thought, learning, values, society] as const
+export const demoContent: readonly ContentItem[] = [...coreDemoContent, ...seededDemoContent]
+
+export const demoCategories = [thought, learning, values, society, language, history, family, occasions, lessons, talks, studies, summaries] as const

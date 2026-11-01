@@ -4,7 +4,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 
 const file = 'app/assets/css/main.css'
 const prefixDead = ["page-intro", "detail-hero", "search-hero", "about-hero", "content-card", "book-spine", "video-poster", "video-directory", "directory-tools", "directory-results", "about-manifesto"]
-const exactDead = ["content-grid", "detail-layout", "detail-aside", "detail-meta", "related-grid", "search-results", "search-results__list", "site-header--overlay", "about-page", "about-copy__grid", "content-card"]
+const exactDead = ["site-footer__grid", "site-footer__statement", "site-footer__note", "content-grid", "detail-layout", "detail-aside", "detail-meta", "related-grid", "search-results", "search-results__list", "site-header--overlay", "about-page", "about-copy__grid", "content-card"]
 const deadClass = new RegExp(String.raw`\.(${prefixDead.join('|')})(?![A-Za-z0-9])|\.(${exactDead.join('|')})(?![\w-])`)
 const src = readFileSync(file, 'utf8')
 
