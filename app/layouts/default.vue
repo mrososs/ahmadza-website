@@ -3,7 +3,7 @@ const route = useRoute()
 const { data } = await useLibraryContent()
 const items = computed(() => data.value?.items ?? [])
 const latest = computed(() => items.value.slice(0, 5))
-const videos = computed(() => items.value.filter(item => item.type === 'video').slice(0, 3))
+const videos = computed(() => items.value.filter(item => item.type === 'video').slice(0, 4))
 </script>
 
 <template>

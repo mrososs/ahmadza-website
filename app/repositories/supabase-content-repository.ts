@@ -84,7 +84,7 @@ export class SupabaseContentRepository implements ContentRepository {
 
   async list(query: ContentQuery = {}): Promise<ContentListResult> {
     const page = Math.max(1, query.page ?? 1)
-    const pageSize = Math.min(50, Math.max(1, query.limit ?? 12))
+    const pageSize = Math.min(100, Math.max(1, query.limit ?? 12))
     const start = (page - 1) * pageSize
 
     let request = this.client

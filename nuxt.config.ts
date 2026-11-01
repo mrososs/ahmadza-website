@@ -19,7 +19,7 @@ export default defineNuxtConfig({
     head: {
       htmlAttrs: { lang: 'ar', dir: 'rtl' },
       meta: [
-        { name: 'theme-color', content: '#173f34' },
+        { name: 'theme-color', content: '#1b365d' },
         { name: 'color-scheme', content: 'light' },
       ],
       link: [{ rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],

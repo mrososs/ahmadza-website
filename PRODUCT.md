@@ -48,7 +48,7 @@ The product combines the calm authority and reading quality of a premium Arabic 
 
 - Project name: `ahmadza-web`; intended public domain: `prof-ahmadza.com`.
 - Primary language is Arabic.
-- The client's latest direction requests close visual and interaction fidelity to haddady.com: traditional Arabic ornamentation, charcoal hero, cream identity treatment, moving orange publication ticker, and compact category navigation.
+- The client's latest direction requests close visual and interaction fidelity to haddady.com: traditional Arabic ornamentation, navy hero (palette changed by the client from the reference's charcoal/orange), cream identity treatment, moving sky-blue publication ticker, and compact category navigation.
 - The supplied AlMohanad font is the confirmed Arabic UI face. Client identity and original or authorized artwork are required; unavailable personal facts remain explicit demo content.
 - The experience must avoid generic SaaS styling, gratuitous gradients, glassmorphism, repetitive cards, fake metrics, invented proof, and generic AI illustration.
 - [haddady.com](https://haddady.com/) is the approved visual and functional reference. Its identity, copy, code, and proprietary artwork are not reused.

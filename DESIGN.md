@@ -4,34 +4,34 @@
 
 ## Direction contract
 
-The site is a traditional Arabic digital library: direct routes into written, audio, and visual material; a charcoal ornamental masthead; and a moving orange publication ribbon. It follows the measured visual hierarchy of the client-approved reference while using the client's identity, original floral artwork, and independently implemented components.
+The site is a traditional Arabic digital library: direct routes into written, audio, and visual material; a navy ornamental masthead; and a moving sky-blue publication ribbon. It follows the measured visual hierarchy of the client-approved reference while using the client's identity, original floral artwork, and independently implemented components.
 
-The first viewport centers the client-supplied transparent PNG composition with «موقع», «أحمد زايد», and its English signature over the original charcoal ornamental background. The plain-name PNG is the header logo; the original vector mark remains in the footer. Search sits in the header; the publication ribbon crosses the base of the hero. Below it, a warm floral edge introduces the library and category modules. The visitor then moves through compact, type-specific registers. Inner page titles use a restrained version of the floral background and a brass rule.
+The first viewport centers the client-supplied transparent PNG composition with «موقع», «أحمد زايد», and its English signature over the original navy ornamental background. The plain-name PNG is the header logo; the original vector mark remains in the footer. Search sits in the header; the publication ribbon crosses the base of the hero. Below it, a warm floral edge introduces the library and category modules. The visitor then moves through compact, type-specific registers. Inner page titles use a restrained version of the floral background and a brass rule.
 
 ### Raised disciplines
 
 - **Register discipline:** every section reads as an index, list, or category route before it reads as decoration.
-- **Tonal progression:** white, quiet gray, charcoal, and orange mark shifts in reading intensity.
+- **Tonal progression:** white, ice-tinted neutrals, navy, and sky blue mark shifts in reading intensity.
 - **Arabic type discipline:** AlMohanad is the UI and display face; its shaping and diacritics are given room to breathe.
-- **Ticker discipline:** orange capsules move continuously at the base of the hero, pause on hover/focus, and stop under reduced motion.
+- **Ticker discipline:** sky-blue capsules move continuously at the base of the hero, pause on hover/focus, and stop under reduced motion.
 - **Layered state clarity:** active, selected, unavailable, and demo states remain distinguishable without relying on color alone.
 - **Persistent index logic:** navigation and filters preserve a catalogue-like sense of place across content types.
 
 ## Semantic color
 
+The client chose this palette (2026-11-01) so the site no longer matches the reference's charcoal/orange scheme. Source of truth: the `--c-*` tokens at the end of `app/assets/css/main.css`.
+
 | Token | Value | Use |
 | --- | --- | --- |
-| paper | `#FCFBF8` | Primary page field |
-| paper-raised | `#FFFFFF` | Reading surfaces |
-| parchment | `#F5F3EF` | Quiet bands and metadata |
-| ink | `#3D3D3D` | Primary text and charcoal fields |
-| ink-muted | `#746D64` | Secondary text |
-| forest | `#3D3D3D` | Legacy semantic alias / focus |
-| forest-light | `#EEEAE4` | Selected and quiet states |
-| brass | `#E98A00` | Ticker, actions, and concise emphasis |
+| navy | `#1B365D` | Masthead, header, YouTube band, headings accents, focus family |
+| blue | `#005A9C` | Text accents and links on white, focus ring, check marks, icons |
+| sky | `#60C1E5` | Ticker capsules, buttons, carousel arrows, active tab/filter, title rules |
+| ice | `#A0E0EF` | Footer labels, ornament tint, soft borders, selection tint |
+| navy-deep | `#13294A` | Ticker band, copyright bar, headings, text on sky (derived darker shade of navy) |
+| neutral tints | `#F4F9FC`, `#F1F9FC`, `#DFF2F8`, `#D5E3EC` | Page field, cards, quiet bands, hairlines |
 | error | `#A23D32` | Error states only |
 
-Body copy must retain at least 4.5:1 contrast. Brass is not used for small text on paper.
+Body copy must retain at least 4.5:1 contrast. Sky is a fill colour: text on sky is navy-deep (about 6:1), and text on white uses blue (about 7:1). Sky is never used for small text on white.
 
 ## Typography
 
@@ -57,12 +57,12 @@ Body copy must retain at least 4.5:1 contrast. Brass is not used for small text 
 
 ## Components and states
 
-- Header: charcoal desktop navigation with direct links and search; white mobile brand band with a disclosure button.
+- Header: navy desktop navigation (transparent over the hero, white once scrolled) with direct links and search; white mobile brand band with a disclosure button.
 - Search: prominent catalogue input with a clear submit action and visible keyboard focus.
 - Content cards: composition varies by type; borders and hierarchy replace decorative containers.
 - Filters: horizontally scrollable at small widths; `aria-pressed` communicates selection.
 - Empty/error/loading: plain language, recovery action, and no fabricated content.
-- Focus: 3px forest outline with 3px paper offset.
+- Focus: 3px blue outline with 3px paper offset.
 
 ## Motion
 

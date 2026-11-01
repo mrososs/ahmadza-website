@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Play } from '@lucide/vue'
 import type { ContentItem } from '~/types/content'
 
 defineProps<{ videos: ContentItem[] }>()
@@ -12,8 +11,9 @@ defineProps<{ videos: ContentItem[] }>()
       <ul class="youtube-band__grid">
         <li v-for="video in videos" :key="video.id">
           <NuxtLink to="/videos" class="youtube-band__card">
-            <span class="youtube-band__poster"><Play :size="34" aria-hidden="true" /><small>لا يوجد رابط موثوق — محتوى تجريبي</small></span>
+            <VideoPlaceholder :duration="video.type === 'video' ? video.durationSeconds : undefined" />
             <strong>{{ video.title }}</strong>
+            <small>لا يوجد رابط فيديو بعد — محتوى تجريبي</small>
           </NuxtLink>
         </li>
       </ul>
