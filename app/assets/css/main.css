@@ -409,7 +409,6 @@ body, button, input, textarea, select { font-family: var(--font-library); }
 @media (max-width: 768px) {
   .site-header { background: #fff; }
   .site-header__main { min-height: 116px; }
-  .site-header__main { flex-direction: row-reverse; justify-content: space-between; }
   .site-header .mobile-nav-button { margin-inline-start: 0; }
   .site-header .brand-mark { color: #b0a78d; }
   .site-header .brand-mark__seal { color: #b0a78d; border-color: #b0a78d; }

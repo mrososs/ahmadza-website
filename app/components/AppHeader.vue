@@ -65,6 +65,7 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
       </button>
     </div>
     <nav v-show="isOpen" id="mobile-nav" class="mobile-nav" aria-label="التنقل على الهاتف">
+      <NuxtLink to="/" active-class="" exact-active-class="router-link-active">الرئيسية</NuxtLink>
       <NuxtLink v-for="link in links" :key="link.to" :to="link.to">{{ link.label }}</NuxtLink>
       <NuxtLink to="/search" class="mobile-nav__search"><Search :size="18" aria-hidden="true" /> البحث في المكتبة</NuxtLink>
     </nav>
