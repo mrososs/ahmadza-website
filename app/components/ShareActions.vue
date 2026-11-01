@@ -29,12 +29,11 @@ async function share() {
 </script>
 
 <template>
-  <div class="share-actions" aria-label="مشاركة المحتوى">
-    <button type="button" @click="share"><Share2 :size="18" aria-hidden="true" /> مشاركة</button>
-    <button type="button" @click="copyLink">
+  <div class="share-actions" role="group" aria-label="مشاركة المحتوى">
+    <button type="button" class="round-action" aria-label="مشاركة" title="مشاركة" @click="share"><Share2 :size="18" aria-hidden="true" /></button>
+    <button type="button" class="round-action" aria-label="نسخ الرابط" title="نسخ الرابط" @click="copyLink">
       <Check v-if="copied" :size="18" aria-hidden="true" />
       <Copy v-else :size="18" aria-hidden="true" />
-      {{ copied ? 'نُسخ الرابط' : 'نسخ الرابط' }}
     </button>
     <span class="sr-only" aria-live="polite">{{ copied ? 'تم نسخ رابط الصفحة' : '' }}</span>
   </div>

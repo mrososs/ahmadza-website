@@ -31,6 +31,7 @@ export default defineNuxtConfig({
     public: {
       siteUrl: 'https://prof-ahmadza.com',
       siteName: 'مكتبة أحمد زايد الرقمية',
+      authorDisplayName: 'أحمد زايد',
     },
   },
   site: {

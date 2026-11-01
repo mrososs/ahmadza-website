@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Clock3 } from '@lucide/vue'
 import { contentTypeLabels, contentTypePluralLabels, contentTypeRoutes, type ContentDetailResult } from '~/types/content'
 import { formatArabicDate } from '~/utils/format'
 
@@ -10,6 +9,13 @@ const typePluralLabel = computed(() => contentTypePluralLabels[item.value.type])
 const listingPath = computed(() => contentTypeRoutes[item.value.type])
 const routePath = computed(() => `${listingPath.value}/${item.value.slug}`)
 const isMedia = computed(() => ['book', 'audio', 'video'].includes(item.value.type))
+const headings = computed(() => item.value.sections.filter(section => section.heading))
+
+// Reading size is a per-visit convenience, like the A+/A- buttons on the reference.
+const scale = shallowRef(1)
+function resize(delta: number) {
+  scale.value = Math.min(1.5, Math.max(0.9, Math.round((scale.value + delta) * 10) / 10))
+}
 
 usePageSeo({
   title: computed(() => item.value.seoTitle || item.value.title),
@@ -37,55 +43,52 @@ useHead({
 </script>
 
 <template>
-  <article class="detail-page" :class="`detail-page--${item.type}`">
-    <div class="site-container">
-      <Breadcrumbs :items="[{ label: typePluralLabel, to: listingPath }, { label: item.title }]" />
-    </div>
-    <header class="detail-hero">
-      <div class="site-container detail-hero__grid">
-        <div>
-          <h1>{{ item.title }}</h1>
-          <div class="detail-hero__kind"><span>{{ typeLabel }}</span><span v-if="result.source === 'demo'">محتوى تجريبي</span></div>
-          <p>{{ item.excerpt }}</p>
+  <InnerPage :title="item.title" :crumbs="[{ label: typePluralLabel, to: listingPath }, { label: item.title }]">
+    <article class="detail-page" :class="`detail-page--${item.type}`">
+      <div class="detail-tools">
+        <div class="detail-tools__size" role="group" aria-label="حجم الخط">
+          <button type="button" :disabled="scale >= 1.5" @click="resize(0.1)">تكبير</button>
+          <button type="button" :disabled="scale <= 0.9" @click="resize(-0.1)">تصغير</button>
         </div>
-        <dl class="detail-meta">
-          <div><dt>النشر</dt><dd><time :datetime="item.publishedAt">{{ formatArabicDate(item.publishedAt) }}</time></dd></div>
-          <div v-if="item.readingMinutes"><dt>زمن القراءة</dt><dd><Clock3 :size="15" aria-hidden="true" /> {{ item.readingMinutes }} دقائق</dd></div>
-          <div><dt>التصنيف</dt><dd>{{ item.categories.map(category => category.name).join('، ') }}</dd></div>
-          <template v-if="item.type === 'book'">
-            <div><dt>المؤلف</dt><dd>{{ item.authorLabel }}</dd></div>
-            <div v-if="item.publicationYear"><dt>سنة النشر</dt><dd>{{ item.publicationYear }}</dd></div>
-          </template>
-        </dl>
-      </div>
-    </header>
-
-    <div class="site-container detail-layout">
-      <aside class="detail-aside">
         <ShareActions :title="item.title" />
-        <nav v-if="item.sections.some(section => section.heading)" aria-label="في هذه الصفحة" class="table-of-contents">
-          <h2>في هذه الصفحة</h2>
-          <a v-for="section in item.sections.filter(section => section.heading)" :key="section.id" :href="`#${section.id}`">{{ section.heading }}</a>
-        </nav>
-      </aside>
-
-      <div>
-        <MediaAvailability v-if="isMedia" :item="item as never" />
-        <div class="reading-body" :class="{ 'reading-body--benefit': item.type === 'benefit' }">
-          <section v-for="section in item.sections" :id="section.id" :key="section.id">
-            <h2 v-if="section.heading">{{ section.heading }}</h2>
-            <p v-for="paragraph in section.paragraphs" :key="paragraph">{{ paragraph }}</p>
-            <blockquote v-if="section.quote">{{ section.quote }}</blockquote>
-          </section>
-        </div>
       </div>
-    </div>
+      <p class="detail-meta-line">
+        <span>{{ typeLabel }}</span>
+        <time :datetime="item.publishedAt">{{ formatArabicDate(item.publishedAt) }}</time>
+        <span v-if="item.readingMinutes">{{ item.readingMinutes }} دقائق قراءة</span>
+        <span v-if="item.categories.length">{{ item.categories.map(category => category.name).join('، ') }}</span>
+        <template v-if="item.type === 'book'">
+          <span>{{ item.authorLabel }}</span>
+          <span v-if="item.publicationYear">{{ item.publicationYear }}</span>
+        </template>
+        <strong v-if="result.source === 'demo'" class="detail-meta-line__demo">محتوى تجريبي</strong>
+      </p>
 
-    <section v-if="result.related.length" class="related-content">
-      <div class="site-container">
-        <div class="section-heading"><h2>مواد ذات صلة</h2><NuxtLink :to="listingPath">كل {{ typePluralLabel }}</NuxtLink></div>
-        <div class="related-grid"><ContentCard v-for="related in result.related" :key="related.id" :item="related" /></div>
+      <MediaAvailability v-if="isMedia" :item="item as never" />
+
+      <nav v-if="headings.length" aria-label="في هذه الصفحة" class="table-of-contents">
+        <h2>في هذه الصفحة</h2>
+        <a v-for="section in headings" :key="section.id" :href="`#${section.id}`">{{ section.heading }}</a>
+      </nav>
+
+      <div class="reading-body" :class="{ 'reading-body--benefit': item.type === 'benefit' }" :style="{ '--reading-scale': scale }">
+        <section v-for="section in item.sections" :id="section.id" :key="section.id">
+          <h2 v-if="section.heading">{{ section.heading }}</h2>
+          <p v-for="paragraph in section.paragraphs" :key="paragraph">{{ paragraph }}</p>
+          <blockquote v-if="section.quote">{{ section.quote }}</blockquote>
+        </section>
       </div>
-    </section>
-  </article>
+
+      <section v-if="result.related.length" class="related-content" aria-labelledby="related-title">
+        <h2 id="related-title">مواد ذات صلة</h2>
+        <ul class="ref-list">
+          <li v-for="related in result.related" :key="related.id">
+            <NuxtLink :to="contentPath(related)">{{ related.title }}</NuxtLink>
+            <time :datetime="related.publishedAt">{{ formatArabicDate(related.publishedAt) }}</time>
+          </li>
+        </ul>
+        <NuxtLink class="ref-more" :to="listingPath">كل {{ typePluralLabel }}</NuxtLink>
+      </section>
+    </article>
+  </InnerPage>
 </template>

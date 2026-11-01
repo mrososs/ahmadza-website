@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Play } from '@lucide/vue'
 import type { ContentListResult } from '~/types/content'
 import { formatDuration } from '~/utils/format'
 
@@ -15,25 +14,20 @@ usePageSeo({ title: 'المرئيات', description: 'دليل المقاطع و
 </script>
 
 <template>
-  <div>
-    <PageIntro title="المرئيات" description="دليل المقاطع والمحاضرات المصورة. لا نضمّن أي فيديو قبل التحقق من رابطه ومصدره." :count="data?.total" />
-    <section class="site-container directory-tools"><ContentSearch v-model="query" /></section>
-    <section class="site-container video-directory">
-      <EmptyState v-if="!visible.length" />
-      <article v-for="video in visible" v-else :key="video.id" class="video-directory__item">
-        <div class="video-directory__poster">
-          <Play :size="40" aria-hidden="true" />
-          <span v-if="video.type === 'video' && video.youtubeId">مشاهدة</span>
-          <span v-else>الرابط قيد التزويد</span>
-        </div>
-        <div>
-          <div class="content-card__meta"><span>{{ video.categories[0]?.name }}</span><span>{{ video.type === 'video' ? formatDuration(video.durationSeconds) : '' }}</span></div>
-          <h2>{{ video.title }}</h2>
-          <p>{{ video.excerpt }}</p>
-          <MediaAvailability v-if="video.type === 'video' && video.youtubeId" :item="video" />
-          <p v-else class="video-directory__notice">هذه بطاقة تجريبية؛ لم نعرض مشغلًا أو صورة مصغرة مزيفة.</p>
-        </div>
-      </article>
-    </section>
-  </div>
+  <InnerPage title="المرئيات">
+    <p class="inner-card__note">دليل المقاطع والمحاضرات المصورة. لا نضمّن أي فيديو قبل التحقق من رابطه ومصدره.</p>
+    <form class="ref-search" role="search" @submit.prevent>
+      <label class="sr-only" for="videos-search">كلمة البحث</label>
+      <input id="videos-search" v-model="query" type="search" placeholder="كلمة البحث">
+    </form>
+    <EmptyState v-if="!visible.length" />
+    <ul v-else class="ref-list ref-list--detailed">
+      <li v-for="video in visible" :key="video.id">
+        <h2>{{ video.title }}</h2>
+        <p>{{ video.excerpt }}</p>
+        <MediaAvailability v-if="video.type === 'video' && video.youtubeId" :item="video" />
+        <small v-else>الرابط قيد التزويد — بطاقة تجريبية{{ video.type === 'video' && video.durationSeconds ? ` · ${formatDuration(video.durationSeconds)}` : '' }}.</small>
+      </li>
+    </ul>
+  </InnerPage>
 </template>

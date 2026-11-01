@@ -8,7 +8,8 @@ async function waitForHydration(page: Page) {
 test('homepage exposes the library and primary journeys', async ({ page }, testInfo) => {
   await page.goto('/')
   await waitForHydration(page)
-  await expect(page.getByRole('heading', { level: 1, name: /معرفةٌ تُقرأ/ })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'أحمد زايد' })).toBeVisible()
+  await expect(page.getByRole('navigation', { name: 'أقسام المكتبة الرئيسة' })).toBeVisible()
   if (testInfo.project.name.includes('mobile')) {
     await expect(page.getByRole('button', { name: 'فتح القائمة' })).toBeVisible()
   }
@@ -28,7 +29,7 @@ test('unified search is URL based and returns typed results', async ({ page }) =
   await page.getByRole('button', { name: 'ابحث' }).click()
   await expect(page).toHaveURL(/q=/)
   await expect(page.getByTestId('search-results')).toBeVisible()
-  await expect(page.getByText('القراءة بمنهج: من جمع الصفحات إلى بناء المعرفة')).toBeVisible()
+  await expect(page.getByTestId('search-results').getByText('القراءة بمنهج: من جمع الصفحات إلى بناء المعرفة')).toBeVisible()
 })
 
 test('article detail supports sharing and has an Arabic reading surface', async ({ page }) => {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ContentListResult, ContentType } from '~/types/content'
+import { formatArabicDate } from '~/utils/format'
 
 const { type, title, description } = defineProps<{ type: ContentType; title: string; description: string }>()
 const route = useRoute()
@@ -10,7 +11,7 @@ const requestQuery = computed(() => ({
   q: typeof route.query.q === 'string' ? route.query.q : undefined,
   category: typeof route.query.category === 'string' ? route.query.category : undefined,
   page: typeof route.query.page === 'string' ? route.query.page : '1',
-  limit: '9',
+  limit: '10',
 }))
 
 const { data, status, error } = await useAsyncData(
@@ -30,15 +31,14 @@ const categories = computed(() => {
   }
   return [...map].map(([slug, name]) => ({ slug, name }))
 })
-const totalPages = computed(() => Math.max(1, Math.ceil((data.value?.total || 0) / (data.value?.pageSize || 9))))
+const totalPages = computed(() => Math.max(1, Math.ceil((data.value?.total || 0) / (data.value?.pageSize || 10))))
 
 function updateQuery(changes: Record<string, string | undefined>) {
   return navigateTo({ path: route.path, query: { ...route.query, ...changes } })
 }
 
-function submitSearch(value: string) {
-  queryInput.value = value
-  updateQuery({ q: value.trim() || undefined, page: undefined })
+function submitSearch() {
+  updateQuery({ q: queryInput.value.trim() || undefined, page: undefined })
 }
 
 function changeCategory(category?: string) {
@@ -49,40 +49,44 @@ usePageSeo({ title, description, path: route.path })
 </script>
 
 <template>
-  <div>
-    <PageIntro :title="title" :description="description" :count="data?.total" />
-    <section class="site-container directory-tools" aria-label="أدوات التصفية">
-      <ContentSearch v-model="queryInput" @submit="submitSearch" />
-      <div class="category-filter" aria-label="التصنيفات">
-        <button type="button" :aria-pressed="!route.query.category" @click="changeCategory()">الكل</button>
-        <button
-          v-for="category in categories"
-          :key="category.slug"
-          type="button"
-          :aria-pressed="route.query.category === category.slug"
-          @click="changeCategory(category.slug)"
-        >
-          {{ category.name }}
-        </button>
-      </div>
-    </section>
+  <InnerPage :title="title">
+    <p class="sr-only">{{ description }}</p>
+    <form class="ref-search" role="search" @submit.prevent="submitSearch">
+      <label class="sr-only" for="directory-search">كلمة البحث</label>
+      <input id="directory-search" v-model="queryInput" name="q" type="search" placeholder="كلمة البحث">
+    </form>
+    <div v-if="categories.length" class="category-filter" role="group" aria-label="التصنيفات">
+      <button type="button" :aria-pressed="!route.query.category" @click="changeCategory()">الكل</button>
+      <button
+        v-for="category in categories"
+        :key="category.slug"
+        type="button"
+        :aria-pressed="route.query.category === category.slug"
+        @click="changeCategory(category.slug)"
+      >
+        {{ category.name }}
+      </button>
+    </div>
 
-    <section class="site-container directory-results" aria-live="polite" :aria-busy="status === 'pending'">
+    <div aria-live="polite" :aria-busy="status === 'pending'">
       <div v-if="status === 'pending'" class="loading-state" role="status">جارٍ ترتيب الرفوف…</div>
       <div v-else-if="error" class="error-state" role="alert">
         <h2>تعذر تحميل المواد</h2>
         <p>أعد المحاولة بعد قليل.</p>
       </div>
       <EmptyState v-else-if="!data?.items.length" />
-      <div v-else class="content-grid">
-        <ContentCard v-for="(item, index) in data.items" :key="item.id" :item="item" :prominent="index === 0" />
-      </div>
-      <ContentPagination
-        v-if="data"
-        :page="data.page"
-        :total-pages="totalPages"
-        @change="updateQuery({ page: String($event) })"
-      />
-    </section>
-  </div>
+      <ul v-else class="ref-list">
+        <li v-for="item in data.items" :key="item.id">
+          <NuxtLink :to="contentPath(item)">{{ item.title }}</NuxtLink>
+          <time :datetime="item.publishedAt">{{ formatArabicDate(item.publishedAt) }}</time>
+        </li>
+      </ul>
+    </div>
+    <ContentPagination
+      v-if="data"
+      :page="data.page"
+      :total-pages="totalPages"
+      @change="updateQuery({ page: String($event) })"
+    />
+  </InnerPage>
 </template>

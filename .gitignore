@@ -14,3 +14,12 @@ blob-report
 
 .vercel
 .env*
+
+# Visual-audit captures: third-party reference screenshots are analysis only, and the rest are regenerable via scripts/audit-*.mjs
+artifacts/
+docs/reference-audit/screenshots/
+docs/implementation-audit/screenshots/
+docs/visual-reference/*.png
+docs/visual-reference/regions/
+docs/visual-comparison/*.png
+docs/visual-comparison/*.html

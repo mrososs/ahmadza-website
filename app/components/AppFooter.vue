@@ -6,7 +6,7 @@ const year = new Date().getFullYear()
   <footer class="site-footer">
     <div class="site-container site-footer__grid">
       <div>
-        <BrandMark />
+        <BrandMark header-logo />
         <p class="site-footer__statement">مساحة عربية هادئة لحفظ المعرفة، وتيسير الوصول إليها، وتقديمها في تجربة قراءة جديرة بها.</p>
       </div>
       <div>
@@ -28,9 +28,9 @@ const year = new Date().getFullYear()
         <p>المواد المعروضة في النسخة الحالية بيانات تجريبية واضحة، وليست سيرةً أو مؤلفاتٍ منسوبة إلى صاحب الموقع.</p>
       </div>
     </div>
-    <div class="site-container site-footer__bottom">
+    <div class="site-footer__bar"><div class="site-container site-footer__bottom">
       <p>© {{ year }} — جميع الحقوق محفوظة.</p>
       <p>صُمّم بالعربية، من اليمين إلى اليسار.</p>
-    </div>
+    </div></div>
   </footer>
 </template>

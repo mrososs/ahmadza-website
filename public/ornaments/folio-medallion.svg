@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" fill="none" stroke="#d6b782" stroke-linecap="round" stroke-linejoin="round">
+  <defs>
+    <g id="petal"><path d="M300 263C258 208 271 113 300 40c29 73 42 168 0 223Z"/><path d="M300 235c-18-41-15-96 0-148 15 52 18 107 0 148Z"/><path d="M300 55v175"/><path d="M283 153c-13-12-24-28-30-47m64 47c13-12 24-28 30-47"/></g>
+    <g id="small"><path d="M300 266c-17-34-13-71 0-107 13 36 17 73 0 107Z"/><circle cx="300" cy="195" r="8"/></g>
+  </defs>
+  <g stroke-width="2.5">
+    <use href="#petal"/><use href="#petal" transform="rotate(45 300 300)"/><use href="#petal" transform="rotate(90 300 300)"/><use href="#petal" transform="rotate(135 300 300)"/><use href="#petal" transform="rotate(180 300 300)"/><use href="#petal" transform="rotate(225 300 300)"/><use href="#petal" transform="rotate(270 300 300)"/><use href="#petal" transform="rotate(315 300 300)"/>
+    <use href="#small" transform="rotate(22.5 300 300)"/><use href="#small" transform="rotate(67.5 300 300)"/><use href="#small" transform="rotate(112.5 300 300)"/><use href="#small" transform="rotate(157.5 300 300)"/><use href="#small" transform="rotate(202.5 300 300)"/><use href="#small" transform="rotate(247.5 300 300)"/><use href="#small" transform="rotate(292.5 300 300)"/><use href="#small" transform="rotate(337.5 300 300)"/>
+    <circle cx="300" cy="300" r="97"/><circle cx="300" cy="300" r="83"/><circle cx="300" cy="300" r="55"/>
+    <path d="M300 246c19 30 35 46 54 54-19 8-35 24-54 54-19-30-35-46-54-54 19-8 35-24 54-54Z"/>
+    <circle cx="300" cy="300" r="19"/><circle cx="300" cy="300" r="5"/>
+  </g>
+</svg>

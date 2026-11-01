@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { ChevronLeft } from '@lucide/vue'
-
 defineProps<{ items: Array<{ label: string; to?: string }> }>()
 </script>
 
@@ -9,7 +7,7 @@ defineProps<{ items: Array<{ label: string; to?: string }> }>()
     <ol>
       <li><NuxtLink to="/">الرئيسية</NuxtLink></li>
       <li v-for="item in items" :key="item.label">
-        <ChevronLeft :size="14" aria-hidden="true" />
+        <span class="breadcrumbs__sep" aria-hidden="true">/</span>
         <NuxtLink v-if="item.to" :to="item.to">{{ item.label }}</NuxtLink>
         <span v-else aria-current="page">{{ item.label }}</span>
       </li>
