@@ -59,7 +59,7 @@ test('anonymous visitors cannot write or read admin data through the public API'
   expect(await profiles.json()).toEqual([])
 })
 
-test('owner can sign in, see the dashboard and sign out', async ({ page }) => {
+test('owner can sign in, see the dashboard and sign out', async ({ page }, testInfo) => {
   const email = process.env.SMOKE_ADMIN_EMAIL
   const password = process.env.SMOKE_ADMIN_PASSWORD
   test.skip(!email || !password, 'owner credentials not provided')
@@ -68,6 +68,8 @@ test('owner can sign in, see the dashboard and sign out', async ({ page }) => {
   await page.getByLabel('كلمة المرور').fill(password!)
   await page.getByRole('button', { name: 'دخول' }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'لوحة التحكم' })).toBeVisible()
+  // The account block lives in the navigation, which is collapsed behind the menu button on phones.
+  if (testInfo.project.name.includes('mobile')) await page.getByRole('button', { name: 'فتح القائمة' }).click()
   await expect(page.getByText('مدير الموقع')).toBeVisible()
   await page.getByRole('button', { name: 'تسجيل الخروج' }).click()
   await expect(page).toHaveURL(/\/admin\/login/)
