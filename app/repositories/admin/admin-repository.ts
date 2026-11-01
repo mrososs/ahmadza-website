@@ -8,6 +8,7 @@ import type {
   AdminStats,
   ContentDraft,
 } from '~/types/admin'
+import type { MediaKind } from '~/utils/media-upload'
 
 export type CategoryInput = Pick<AdminCategory, 'slug' | 'name' | 'description' | 'sortOrder' | 'active'>
 
@@ -37,8 +38,8 @@ export interface AdminRepository {
   getContent(id: string): Promise<AdminContentRecord | null>
   saveContent(draft: ContentDraft, id?: string): Promise<string>
   deleteContent(id: string): Promise<void>
-  /** Stores a PDF in public storage and returns its public URL. Rejects with an editor-readable AdminError. */
-  uploadPdf(file: File): Promise<string>
+  /** Stores a validated file in public storage and returns its public URL. `onProgress` receives 0–100. Rejects with an editor-readable AdminError. */
+  uploadMedia(kind: MediaKind, file: File, onProgress?: (percent: number) => void): Promise<string>
   listCategories(): Promise<AdminCategory[]>
   saveCategory(input: CategoryInput, id?: string): Promise<void>
 }

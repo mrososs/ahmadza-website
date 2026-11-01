@@ -93,7 +93,7 @@ class DemoAdminRepository implements AdminRepository {
     this.records.delete(id)
   }
 
-  async uploadPdf(): Promise<string> {
+  async uploadMedia(): Promise<string> {
     throw new AdminError('رفع الملفات غير متاح في النسخة التجريبية.')
   }
 

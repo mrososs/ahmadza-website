@@ -49,6 +49,7 @@ export interface ContentDraft {
   publicationYear: string
   pageCount: string
   pdfUrl: string
+  coverUrl: string
   downloadAllowed: boolean
   audioUrl: string
   durationSeconds: string

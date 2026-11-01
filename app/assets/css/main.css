@@ -827,3 +827,4 @@ img.category-card__art { width: 100px; height: 150px; }
 .video-grid small { color: var(--ref-orange-text); font-weight: 700; }
 @media (max-width: 1024px) { .youtube-band__grid > li { flex-basis: calc((100% - 1.5rem) / 2); } .video-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }}
 @media (max-width: 600px) { .youtube-band__grid > li { flex-basis: 100%; } .video-grid { grid-template-columns: 1fr; }}
+.book-cover { display: block; inline-size: 200px; max-inline-size: 100%; aspect-ratio: 2 / 3; object-fit: cover; margin-block-end: 1.5rem; border: 1px solid var(--rule); border-radius: 6px; }

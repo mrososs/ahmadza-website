@@ -64,6 +64,8 @@ useHead({
         <strong v-if="result.source === 'demo'" class="detail-meta-line__demo">محتوى تجريبي</strong>
       </p>
 
+      <img v-if="item.type === 'book' && item.coverUrl" class="book-cover" :src="item.coverUrl" :alt="`غلاف كتاب ${item.title}`" width="200" height="300">
+
       <MediaAvailability v-if="isMedia" :item="item as never" />
 
       <nav v-if="headings.length" aria-label="في هذه الصفحة" class="table-of-contents">

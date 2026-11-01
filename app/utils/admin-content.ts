@@ -37,6 +37,7 @@ export const draftSchema = z.object({
   publicationYear: optionalInt('سنة النشر', 2100),
   pageCount: optionalInt('عدد الصفحات', 20000),
   pdfUrl: optionalUrl,
+  coverUrl: optionalUrl,
   downloadAllowed: z.boolean(),
   audioUrl: optionalUrl,
   durationSeconds: optionalInt('المدة', 86400),
@@ -78,6 +79,7 @@ export function draftToMetadata(draft: ContentDraft): Record<string, unknown> {
         publicationYear: toInt(draft.publicationYear),
         pageCount: toInt(draft.pageCount),
         pdfUrl: draft.pdfUrl.trim(),
+        coverUrl: draft.coverUrl.trim(),
         downloadAllowed: draft.downloadAllowed,
       })
     case 'audio':
@@ -87,7 +89,7 @@ export function draftToMetadata(draft: ContentDraft): Record<string, unknown> {
   }
 }
 
-export function metadataToDraftFields(type: ContentType, metadata: Record<string, unknown>): Pick<ContentDraft, 'linkedAudioSlug' | 'authorLabel' | 'publicationYear' | 'pageCount' | 'pdfUrl' | 'downloadAllowed' | 'audioUrl' | 'durationSeconds' | 'youtubeId'> {
+export function metadataToDraftFields(type: ContentType, metadata: Record<string, unknown>): Pick<ContentDraft, 'linkedAudioSlug' | 'authorLabel' | 'publicationYear' | 'pageCount' | 'pdfUrl' | 'coverUrl' | 'downloadAllowed' | 'audioUrl' | 'durationSeconds' | 'youtubeId'> {
   const text = (key: string) => typeof metadata[key] === 'string' ? metadata[key] : ''
   const num = (key: string) => typeof metadata[key] === 'number' ? String(metadata[key]) : ''
   return {
@@ -96,6 +98,7 @@ export function metadataToDraftFields(type: ContentType, metadata: Record<string
     publicationYear: type === 'book' ? num('publicationYear') : '',
     pageCount: type === 'book' ? num('pageCount') : '',
     pdfUrl: type === 'book' ? text('pdfUrl') : '',
+    coverUrl: type === 'book' ? text('coverUrl') : '',
     downloadAllowed: type === 'book' && metadata.downloadAllowed === true,
     audioUrl: type === 'audio' ? text('audioUrl') : '',
     durationSeconds: type === 'audio' || type === 'video' ? num('durationSeconds') : '',
@@ -111,7 +114,7 @@ export function itemToDraftFields(item: ContentItem): ReturnType<typeof metadata
     case 'sermon':
       return metadataToDraftFields('sermon', { linkedAudioSlug: item.linkedAudioSlug })
     case 'book':
-      return metadataToDraftFields('book', { authorLabel: item.authorLabel, publicationYear: item.publicationYear, pageCount: item.pageCount, pdfUrl: item.pdfUrl, downloadAllowed: item.downloadAllowed })
+      return metadataToDraftFields('book', { authorLabel: item.authorLabel, publicationYear: item.publicationYear, pageCount: item.pageCount, pdfUrl: item.pdfUrl, coverUrl: item.coverUrl, downloadAllowed: item.downloadAllowed })
     case 'audio':
       return metadataToDraftFields('audio', { audioUrl: item.audioUrl, durationSeconds: item.durationSeconds })
     case 'video':

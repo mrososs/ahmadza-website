@@ -156,7 +156,7 @@
   .admin-table__actions { justify-content: flex-start; padding-block-start: .4rem !important; }
 }
 
-.admin-dialog { width: min(92vw, 440px); padding: 1.5rem; border: 0; border-radius: 10px; box-shadow: 0 20px 60px rgb(0 0 0 / 30%); font-family: inherit; color: var(--admin-ink, #3d3d3d); direction: rtl; }
+.admin-dialog { margin: auto; width: min(92vw, 440px); padding: 1.5rem; border: 0; border-radius: 10px; box-shadow: 0 20px 60px rgb(0 0 0 / 30%); font-family: inherit; color: var(--admin-ink, #3d3d3d); direction: rtl; }
 .admin-dialog::backdrop { background: rgb(0 0 0 / 50%); }
 .admin-dialog h2 { margin: 0 0 .5rem; }
 .admin-dialog__actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-block-start: 1.25rem; }
@@ -182,3 +182,12 @@ a.admin-button { text-decoration: none; }
 @media (prefers-reduced-motion: reduce) {
   .admin-shell *, .login-page * { transition-duration: .01ms !important; }
 }
+
+.file-upload { margin: 0 0 1rem; padding: 1rem; border: 1px solid var(--admin-line); border-radius: 8px; }
+.file-upload legend { padding-inline: .4rem; font-weight: 700; }
+.file-upload__progress { display: flex; align-items: center; gap: .75rem; margin-block-end: 1rem; }
+.file-upload__progress progress { flex: 1; height: 12px; accent-color: var(--admin-orange); }
+.file-upload__done { margin: 0 0 1rem; color: #1f6b3a; font-weight: 600; }
+.file-upload__preview { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin-block-end: 1rem; }
+.file-upload__preview img { width: 120px; height: 180px; object-fit: cover; border: 1px solid var(--admin-line); }
+.file-upload__preview audio { max-width: 100%; }

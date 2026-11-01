@@ -52,6 +52,7 @@ export interface BookContent extends ContentBase {
   publicationYear?: number
   pageCount?: number
   pdfUrl?: string
+  coverUrl?: string
   downloadAllowed: boolean
 }
 

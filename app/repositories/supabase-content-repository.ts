@@ -56,6 +56,7 @@ function mapRow(row: ContentRow): ContentItem {
         ...(typeof row.metadata.publicationYear === 'number' ? { publicationYear: row.metadata.publicationYear } : {}),
         ...(typeof row.metadata.pageCount === 'number' ? { pageCount: row.metadata.pageCount } : {}),
         ...(typeof row.metadata.pdfUrl === 'string' ? { pdfUrl: row.metadata.pdfUrl } : {}),
+        ...(typeof row.metadata.coverUrl === 'string' ? { coverUrl: row.metadata.coverUrl } : {}),
         downloadAllowed: row.metadata.downloadAllowed === true,
       }
     case 'audio':

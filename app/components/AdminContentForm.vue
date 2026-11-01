@@ -3,7 +3,6 @@ import { Save } from '@lucide/vue'
 import { publishStatusLabels, type AdminCategory, type ContentDraft, type FieldErrors } from '~/types/admin'
 import { contentTypeLabels, contentTypes } from '~/types/content'
 import { suggestSlug } from '~/utils/admin-content'
-import { AdminError } from '~/repositories/admin/admin-repository'
 
 const draft = defineModel<ContentDraft>({ required: true })
 const { categories, errors, saving, isNew } = defineProps<{ categories: AdminCategory[]; errors: FieldErrors; saving: boolean; isNew: boolean }>()
@@ -17,29 +16,6 @@ const statusOptions = computed(() => draft.value.status === 'scheduled'
 function toggleCategory(id: string, checked: boolean) {
   const rest = draft.value.categoryIds.filter(entry => entry !== id)
   draft.value.categoryIds = checked ? [...rest, id] : rest
-}
-
-const uploading = ref(false)
-const uploadError = ref('')
-const uploadedName = ref('')
-
-async function onPdfPicked(event: Event) {
-  const input = event.target as HTMLInputElement
-  const file = input.files?.[0]
-  if (!file) return
-  uploading.value = true
-  uploadError.value = ''
-  try {
-    draft.value.pdfUrl = await (await useAdminRepository()).uploadPdf(file)
-    uploadedName.value = file.name
-  }
-  catch (error) {
-    uploadError.value = error instanceof AdminError ? error.message : 'تعذر رفع الملف. حاول مرة أخرى.'
-  }
-  finally {
-    uploading.value = false
-    input.value = ''
-  }
 }
 
 function onTypeChange() {
@@ -92,28 +68,20 @@ function onTypeChange() {
             <AdminField v-slot="{ id, describedBy, invalid }" label="عدد الصفحات" :error="errors.pageCount">
               <input :id="id" v-model="draft.pageCount" inputmode="numeric" type="text" :aria-invalid="invalid" :aria-describedby="describedBy">
             </AdminField>
-            <AdminField v-slot="{ id, describedBy }" label="رفع ملف PDF" hint="اختر ملفًا من جهازك (حتى 50 ميجابايت). يُحفظ الرابط تلقائيًا." :error="uploadError || undefined">
-              <input :id="id" type="file" accept="application/pdf,.pdf" :disabled="uploading" :aria-describedby="describedBy" @change="onPdfPicked">
-            </AdminField>
-            <p v-if="uploading" class="admin-muted" role="status">جارٍ رفع الملف…</p>
-            <p v-else-if="uploadedName" class="admin-muted" role="status">تم رفع الملف: <bdi>{{ uploadedName }}</bdi>. اضغط «حفظ المادة» لتثبيته.</p>
-            <AdminField v-slot="{ id, describedBy, invalid }" label="أو رابط ملف PDF خارجي" :error="errors.pdfUrl">
-              <input :id="id" v-model="draft.pdfUrl" dir="ltr" type="url" class="ltr-input" :aria-invalid="invalid" :aria-describedby="describedBy">
-            </AdminField>
           </div>
+          <AdminFileUpload v-model="draft.pdfUrl" kind="pdf" label="ملف الكتاب (PDF)" hint="ملف PDF حتى 50 ميجابايت." :error="errors.pdfUrl" />
+          <AdminFileUpload v-model="draft.coverUrl" kind="image" label="غلاف الكتاب" hint="صورة JPG أو PNG أو WEBP حتى 5 ميجابايت، يفضّل أن تكون طولية." :error="errors.coverUrl" />
           <label class="admin-check"><input v-model="draft.downloadAllowed" type="checkbox"> السماح بتنزيل الكتاب</label>
         </section>
 
         <section v-if="draft.type === 'audio'" class="admin-card" aria-labelledby="f-audio">
           <h2 id="f-audio" class="admin-card__title">بيانات الصوتية</h2>
           <div class="admin-grid-2">
-            <AdminField v-slot="{ id, describedBy, invalid }" label="رابط الملف الصوتي" :error="errors.audioUrl">
-              <input :id="id" v-model="draft.audioUrl" dir="ltr" type="url" class="ltr-input" :aria-invalid="invalid" :aria-describedby="describedBy">
-            </AdminField>
             <AdminField v-slot="{ id, describedBy, invalid }" label="المدة بالثواني" :error="errors.durationSeconds">
               <input :id="id" v-model="draft.durationSeconds" inputmode="numeric" type="text" :aria-invalid="invalid" :aria-describedby="describedBy">
             </AdminField>
           </div>
+          <AdminFileUpload v-model="draft.audioUrl" kind="audio" label="الملف الصوتي" hint="MP3 أو M4A أو WAV أو OGG حتى 50 ميجابايت." :error="errors.audioUrl" />
         </section>
 
         <section v-if="draft.type === 'video'" class="admin-card" aria-labelledby="f-video">

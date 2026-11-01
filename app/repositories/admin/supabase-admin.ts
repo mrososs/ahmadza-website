@@ -11,7 +11,8 @@ import type {
   ContentDraft,
 } from '~/types/admin'
 import { publishStatuses } from '~/types/admin'
-import { cleanSections, draftToMetadata, isoToLocalInput, localInputToIso, metadataToDraftFields } from '~/utils/admin-content'
+import { mediaExtension, mediaSpecs, validateMediaFile, type MediaKind } from '~/utils/media-upload'
+import { cleanSections,draftToMetadata, isoToLocalInput, localInputToIso, metadataToDraftFields } from '~/utils/admin-content'
 import { AdminError, type AdminAuth, type AdminBackend, type AdminRepository, type CategoryInput } from '~/repositories/admin/admin-repository'
 
 const statusSchema = z.enum(publishStatuses)
@@ -62,8 +63,7 @@ const profileRowSchema = z.object({
   active: z.boolean(),
 })
 
-const PDF_BUCKET = 'publications'
-const MAX_PDF_BYTES = 50 * 1024 * 1024
+const MEDIA_BUCKET = 'publications'
 const SUMMARY_COLUMNS ='id, type, slug, title, status, featured, published_at, updated_at'
 const RECORD_COLUMNS = `${SUMMARY_COLUMNS}, excerpt, body, scheduled_at, reading_minutes, metadata, seo_title, seo_description, content_categories(category_id)`
 
@@ -84,6 +84,21 @@ function failure(error: { code?: string; message: string }, fallback: string): A
   if (error.code === '23514') return new AdminError('إحدى القيم لا تطابق القواعد المسموح بها. راجع الحقول وحاول مرة أخرى.')
   console.error('[admin] Supabase request failed', error.code, error.message)
   return new AdminError(fallback)
+}
+
+/** Resolves with the HTTP status (0 on a network failure) and reports whole-percent upload progress. */
+function sendWithProgress(url: string, headers: Record<string, string>, body: FormData, onProgress?: (percent: number) => void): Promise<number> {
+  return new Promise((resolve) => {
+    const request = new XMLHttpRequest()
+    request.open('POST', url)
+    for (const [name, value] of Object.entries(headers)) request.setRequestHeader(name, value)
+    request.upload.onprogress = (event) => {
+      if (event.lengthComputable) onProgress?.(Math.min(100, Math.round((event.loaded / event.total) * 100)))
+    }
+    request.onload = () => resolve(request.status)
+    request.onerror = () => resolve(0)
+    request.send(body)
+  })
 }
 
 class SupabaseAdminAuth implements AdminAuth {
@@ -166,7 +181,7 @@ class SupabaseAdminAuth implements AdminAuth {
 
 class SupabaseAdminRepository implements AdminRepository {
   readonly source = 'supabase'
-  constructor(private readonly client: SupabaseClient) {}
+  constructor(private readonly client: SupabaseClient, private readonly url: string, private readonly publishableKey: string) {}
 
   private async currentUserId(): Promise<string> {
     const { data } = await this.client.auth.getUser()
@@ -291,16 +306,27 @@ class SupabaseAdminRepository implements AdminRepository {
     if (error) throw failure(error, 'تعذر حذف المادة.')
   }
 
-  async uploadPdf(file: File): Promise<string> {
-    if (file.type !== 'application/pdf') throw new AdminError('الملف يجب أن يكون بصيغة PDF.')
-    if (file.size > MAX_PDF_BYTES) throw new AdminError('حجم الملف أكبر من 50 ميجابايت.')
-    await this.currentUserId()
+  async uploadMedia(kind: MediaKind, file: File, onProgress?: (percent: number) => void): Promise<string> {
+    const problem = validateMediaFile(kind, file)
+    if (problem) throw new AdminError(problem)
+    const extension = mediaExtension(kind, file.type)
+    const { data } = await this.client.auth.getSession()
+    if (!data.session || !extension) throw new AdminError('انتهت الجلسة. سجّل الدخول من جديد.')
 
     // A random name avoids collisions and keeps Arabic file names out of the public URL.
-    const path = `books/${crypto.randomUUID()}.pdf`
-    const { error } = await this.client.storage.from(PDF_BUCKET).upload(path, file, { contentType: 'application/pdf', cacheControl: '31536000', upsert: false })
-    if (error) throw failure({ message: error.message }, 'تعذر رفع الملف. حاول مرة أخرى.')
-    return this.client.storage.from(PDF_BUCKET).getPublicUrl(path).data.publicUrl
+    const path = `${mediaSpecs[kind].folder}/${crypto.randomUUID()}.${extension}`
+    const body = new FormData()
+    body.append('cacheControl', '31536000')
+    body.append('', file)
+    // supabase-js cannot report upload progress, so the same storage endpoint is called directly with the editor's session.
+    const status = await sendWithProgress(`${this.url}/storage/v1/object/${MEDIA_BUCKET}/${path}`, { apikey: this.publishableKey, authorization: `Bearer ${data.session.access_token}` }, body, onProgress)
+    if (status === 401 || status === 403) throw new AdminError('ليست لديك صلاحية رفع الملفات. سجّل الدخول من جديد.')
+    if (status === 413) throw new AdminError('حجم الملف أكبر من الحد المسموح به.')
+    if (status < 200 || status >= 300) {
+      console.error('[admin] media upload failed', status)
+      throw new AdminError('تعذر رفع الملف. تحقق من الاتصال وحاول مرة أخرى.')
+    }
+    return this.client.storage.from(MEDIA_BUCKET).getPublicUrl(path).data.publicUrl
   }
 
   async listCategories(): Promise<AdminCategory[]> {
@@ -321,5 +347,5 @@ class SupabaseAdminRepository implements AdminRepository {
 export function createSupabaseAdminBackend(url: string, publishableKey: string): AdminBackend {
   // Unlike the public repository this client keeps the editor's session so RLS sees `auth.uid()`.
   const client = createClient(url, publishableKey, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, flowType: 'pkce' } })
-  return { auth: new SupabaseAdminAuth(client), repository: new SupabaseAdminRepository(client) }
+  return { auth: new SupabaseAdminAuth(client), repository: new SupabaseAdminRepository(client, url, publishableKey) }
 }
