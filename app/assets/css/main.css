@@ -803,3 +803,7 @@ html { scroll-padding-block-start: 8.5rem; }
 .youtube-band__grid > li { flex: 0 1 calc((100% - 3rem) / 3); }
 @media (max-width: 1024px) { .youtube-band__grid > li { flex-basis: calc((100% - 1.5rem) / 2); } }
 @media (max-width: 600px) { .youtube-band__grid > li { flex-basis: 100%; } }
+img.category-card__art { width: 100px; height: 150px; }
+/* Keep the track's top margin inside the carousel so the arrow buttons sit above the cards instead of overlapping them. */
+.latest-carousel { display: flow-root; }
+.latest-carousel__controls { inset-block-start: 0; }
