@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Library } from '@lucide/vue'
 
-defineProps<{ title?: string; description?: string }>()
+defineProps<{ title?: string | undefined; description?: string | undefined }>()
 </script>
 
 <template>

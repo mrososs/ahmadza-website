@@ -31,6 +31,7 @@ const categories = computed(() => {
   }
   return [...map].map(([slug, name]) => ({ slug, name }))
 })
+const hasFilters = computed(() => Boolean(route.query.q || route.query.category))
 const totalPages = computed(() => Math.max(1, Math.ceil((data.value?.total || 0) / (data.value?.pageSize || 10))))
 
 function updateQuery(changes: Record<string, string | undefined>) {
@@ -74,7 +75,11 @@ usePageSeo({ title, description, path: route.path })
         <h2>تعذر تحميل المواد</h2>
         <p>أعد المحاولة بعد قليل.</p>
       </div>
-      <EmptyState v-else-if="!data?.items.length" />
+      <EmptyState
+        v-else-if="!data?.items.length"
+        :title="hasFilters ? undefined : 'لا توجد مواد منشورة حاليًا'"
+        :description="hasFilters ? undefined : 'سيظهر المحتوى هنا فور نشره.'"
+      />
       <ul v-else class="ref-list">
         <li v-for="item in data.items" :key="item.id">
           <NuxtLink :to="contentPath(item)">{{ item.title }}</NuxtLink>

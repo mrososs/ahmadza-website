@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const year = new Date().getFullYear()
+const isDemo = useIsDemoContent()
 
 const groups = [
   { label: 'المكتبة', links: [{ to: '/articles', label: 'المقالات' }, { to: '/books', label: 'الكتب' }, { to: '/sermons', label: 'الخطب' }, { to: '/audio', label: 'الصوتيات' }] },
@@ -26,7 +27,7 @@ const groups = [
     <div class="site-footer__bar">
       <div class="ref-container site-footer__bottom">
         <p>© {{ year }} — جميع الحقوق محفوظة.</p>
-        <p>المواد المعروضة بيانات تجريبية، وليست سيرةً أو مؤلفاتٍ منسوبة إلى صاحب الموقع.</p>
+        <p v-if="isDemo">المواد المعروضة بيانات تجريبية، وليست سيرةً أو مؤلفاتٍ منسوبة إلى صاحب الموقع.</p>
       </div>
     </div>
   </footer>

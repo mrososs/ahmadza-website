@@ -4,6 +4,7 @@ import { formatArabicDate } from '~/utils/format'
 
 const route = useRoute()
 const query = shallowRef(typeof route.query.q === 'string' ? route.query.q : '')
+const isDemo = useIsDemoContent()
 const { data } = await useAsyncData('videos-directory', () => $fetch<ContentListResult>('/api/content', { query: { type: 'video', limit: 30 } }))
 const visible = computed(() => {
   const needle = query.value.trim().toLocaleLowerCase('ar')
@@ -20,7 +21,7 @@ usePageSeo({ title: 'المرئيات', description: 'دليل المقاطع و
       <label class="sr-only" for="videos-search">كلمة البحث</label>
       <input id="videos-search" v-model="query" type="search" placeholder="كلمة البحث">
     </form>
-    <EmptyState v-if="!visible.length" />
+    <EmptyState v-if="!visible.length" :title="query.trim() ? undefined : 'لا توجد مواد منشورة حاليًا'" :description="query.trim() ? undefined : 'ستظهر المرئيات هنا فور نشرها.'" />
     <ul v-else class="video-grid">
       <li v-for="video in visible" :key="video.id">
         <MediaAvailability v-if="video.type === 'video' && video.youtubeId" :item="video" />
@@ -31,7 +32,7 @@ usePageSeo({ title: 'المرئيات', description: 'دليل المقاطع و
           <time :datetime="video.publishedAt">{{ formatArabicDate(video.publishedAt) }}</time>
         </p>
         <p>{{ video.excerpt }}</p>
-        <small v-if="!(video.type === 'video' && video.youtubeId)">الرابط قيد التزويد — بطاقة تجريبية.</small>
+        <small v-if="!(video.type === 'video' && video.youtubeId)">{{ isDemo ? "الرابط قيد التزويد — بطاقة تجريبية." : "الرابط قيد التزويد." }}</small>
       </li>
     </ul>
   </InnerPage>

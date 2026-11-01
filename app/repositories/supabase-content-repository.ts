@@ -96,7 +96,7 @@ export class SupabaseContentRepository implements ContentRepository {
 
     if (query.type) request = request.eq('type', query.type)
     if (query.featured !== undefined) request = request.eq('featured', query.featured)
-    if (query.query) request = request.textSearch('search_document', query.query, { type: 'websearch', config: 'arabic' })
+    if (query.query) request = request.textSearch('search_document', query.query, { type: 'websearch', config: 'simple' })
     if (query.category) request = request.eq('content_categories.categories.slug', query.category)
 
     const { data, error, count } = await request

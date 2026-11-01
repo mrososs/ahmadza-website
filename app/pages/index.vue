@@ -5,6 +5,7 @@ import { contentTypeRoutes } from '~/types/content'
 import type { TopicGroup } from '~/components/TopicTabs.vue'
 
 const { data } = await useLibraryContent()
+const isDemo = useIsDemoContent()
 const items = computed(() => data.value?.items || [])
 const published = computed(() => items.value.slice(0, 6))
 const selected = computed(() => {
@@ -48,7 +49,7 @@ usePageSeo({
     <section class="digital-library" aria-labelledby="digital-library-title">
       <div class="ref-container">
         <h2 id="digital-library-title" class="ref-title">المكتبة الرقمية</h2>
-        <p class="ref-lead">تضم المكتبة الخطب والدروس والمقالات لصاحب الموقع {{ authorDisplayName }} — محتوى تجريبي.</p>
+        <p class="ref-lead">تضم المكتبة الخطب والدروس والمقالات لصاحب الموقع {{ authorDisplayName }}<template v-if="isDemo"> — محتوى تجريبي</template>.</p>
         <nav class="digital-library__grid" aria-label="أقسام المكتبة الرئيسة">
           <NuxtLink v-for="category in categories" :key="category.type" :to="contentTypeRoutes[category.type]" class="category-card">
             <img v-if="category.type === 'sermon'" class="category-card__art" src="/ornaments/sermon-microphone.png" alt="" width="1024" height="1536" loading="lazy">
@@ -65,11 +66,12 @@ usePageSeo({
     <section class="latest-publications" aria-labelledby="latest-title">
       <div class="ref-container">
         <h2 id="latest-title" class="ref-title">أحدث المنشورات</h2>
-        <LatestCarousel :items="published" />
+        <LatestCarousel v-if="published.length" :items="published" />
+        <EmptyState v-else title="لا توجد مواد منشورة حاليًا" description="ستظهر أحدث المنشورات هنا فور نشرها." />
       </div>
     </section>
 
-    <section class="selected-for-you" aria-labelledby="selected-title">
+    <section v-if="selected.length" class="selected-for-you" aria-labelledby="selected-title">
       <div class="ref-container">
         <h2 id="selected-title" class="ref-title">اخترنا لكم</h2>
         <ul class="selected-for-you__grid">
@@ -82,7 +84,7 @@ usePageSeo({
       </div>
     </section>
 
-    <section class="library-topics" aria-labelledby="topics-title">
+    <section v-if="topicGroups.length" class="library-topics" aria-labelledby="topics-title">
       <div class="ref-container">
         <h2 id="topics-title" class="ref-title">أحدث المواضيع في أقسام المكتبة</h2>
         <TopicTabs :groups="topicGroups" />
