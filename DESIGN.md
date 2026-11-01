@@ -1,19 +1,19 @@
-# Design System — Contemporary Accession Folio
+# Design System — Arabic Digital Library
 
 <!-- impeccable:design-schema 1 -->
 
 ## Direction contract
 
-The site translates the working artifacts of a respected Arabic library—accession folios, catalogue slips, careful marginalia, binding cloth, and brass shelf labels—into a contemporary editorial interface. It is not nostalgic ornament. Structure, annotation, and measured material contrast make the archive legible.
+The site is a traditional Arabic digital library: direct routes into written, audio, and visual material; a charcoal ornamental masthead; and a moving orange publication ribbon. It follows the measured visual hierarchy of the client-approved reference while using the client's identity, original floral artwork, and independently implemented components.
 
-The first viewport should feel like opening a curated folio: one decisive editorial statement, a visible route into search, and a compact index of media types. The visitor moves from a featured publication into increasingly dense archive views. Search opens the catalogue; it never behaves like an app dashboard.
+The first viewport centers the client-supplied transparent PNG composition with «موقع», «أحمد زايد», and its English signature over the original charcoal ornamental background. The plain-name PNG is the header logo; the original vector mark remains in the footer. Search sits in the header; the publication ribbon crosses the base of the hero. Below it, a warm floral edge introduces the library and category modules. The visitor then moves through compact, type-specific registers. Inner page titles use a restrained version of the floral background and a brass rule.
 
 ### Raised disciplines
 
-- **Depth-axis discipline:** page sections deepen from broad invitation to dense archive without visual noise.
-- **Tonal progression:** ivory, parchment, forest, and charcoal surfaces mark shifts in reading intensity.
-- **Specimen discipline:** Arabic display type is given room to show its shaping and diacritics.
-- **Duotone commitment:** forest and paper dominate; brass is a notation, never decoration.
+- **Register discipline:** every section reads as an index, list, or category route before it reads as decoration.
+- **Tonal progression:** white, quiet gray, charcoal, and orange mark shifts in reading intensity.
+- **Arabic type discipline:** AlMohanad is the UI and display face; its shaping and diacritics are given room to breathe.
+- **Ticker discipline:** orange capsules move continuously at the base of the hero, pause on hover/focus, and stop under reduced motion.
 - **Layered state clarity:** active, selected, unavailable, and demo states remain distinguishable without relying on color alone.
 - **Persistent index logic:** navigation and filters preserve a catalogue-like sense of place across content types.
 
@@ -21,33 +21,33 @@ The first viewport should feel like opening a curated folio: one decisive editor
 
 | Token | Value | Use |
 | --- | --- | --- |
-| paper | `#F5F0E6` | Primary page field |
-| paper-raised | `#FFFDF8` | Reading surfaces |
-| parchment | `#E9DFCC` | Quiet bands and metadata |
-| ink | `#1D241F` | Primary text |
-| ink-muted | `#5E665F` | Secondary text |
-| forest | `#173F34` | Brand field, actions, focus |
-| forest-light | `#DDE8E1` | Selected and quiet states |
-| brass | `#A77C32` | Fine rules, marks, emphasis |
+| paper | `#FCFBF8` | Primary page field |
+| paper-raised | `#FFFFFF` | Reading surfaces |
+| parchment | `#F5F3EF` | Quiet bands and metadata |
+| ink | `#3D3D3D` | Primary text and charcoal fields |
+| ink-muted | `#746D64` | Secondary text |
+| forest | `#3D3D3D` | Legacy semantic alias / focus |
+| forest-light | `#EEEAE4` | Selected and quiet states |
+| brass | `#E98A00` | Ticker, actions, and concise emphasis |
 | error | `#A23D32` | Error states only |
 
 Body copy must retain at least 4.5:1 contrast. Brass is not used for small text on paper.
 
 ## Typography
 
-- UI/navigation/metadata: IBM Plex Sans Arabic, weights 400–700.
-- Editorial headings and long reading: Noto Naskh Arabic, weights 400–700.
-- Display scale: `clamp(2.6rem, 7vw, 5.8rem)` with compact but never negative tracking beyond `-0.02em`.
+- UI/navigation/display: AlMohanad (self-hosted), weight 400.
+- Long reading: Noto Naskh Arabic where the reading component specifies it.
+- Display scale: `clamp(2.45rem, 5.3vw, 5rem)` with compact but never negative tracking beyond `-0.02em`.
 - Body reading: 1.16–1.3rem, line-height 2–2.08, maximum 72ch.
 - Metadata: 0.8–0.9rem, strong contrast, tabular numerals where useful.
 
 ## Layout and spacing
 
-- Content container: min(`calc(100% - 2rem)`, 1240px).
+- Content container: min(`calc(100% - 2.5rem)`, 1180px).
 - Reading column: 68–72ch.
 - Spacing scale: 4, 8, 12, 16, 24, 32, 48, 64, 88, 120px.
 - Breakpoints follow Tailwind defaults, with intentional checks at 360, 390, 768, 1024, and 1440px.
-- Use asymmetry to distinguish editorial priority, then collapse into a clear single-column reading order on narrow screens.
+- Prefer compact two- and three-column registers, then collapse into a clear single-column reading order on narrow screens.
 
 ## Surfaces, borders, and radius
 
@@ -57,7 +57,7 @@ Body copy must retain at least 4.5:1 contrast. Brass is not used for small text 
 
 ## Components and states
 
-- Header: two-level editorial masthead on desktop; compact wordmark and disclosure navigation on mobile.
+- Header: charcoal desktop navigation with direct links and search; white mobile brand band with a disclosure button.
 - Search: prominent catalogue input with a clear submit action and visible keyboard focus.
 - Content cards: composition varies by type; borders and hierarchy replace decorative containers.
 - Filters: horizontally scrollable at small widths; `aria-pressed` communicates selection.
@@ -66,7 +66,7 @@ Body copy must retain at least 4.5:1 contrast. Brass is not used for small text 
 
 ## Motion
 
-- One authored reveal at the home hero using a paper-mask/clip transition.
+- The publication ribbon is the authored moving element; its duplicate loop is hidden from assistive technology.
 - All other transitions are restrained (160–260ms), use ease-out, and communicate hover, disclosure, or filtering state.
 - `prefers-reduced-motion: reduce` removes nonessential motion and smooth scrolling.
 

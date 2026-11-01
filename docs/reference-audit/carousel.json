@@ -1,0 +1,5 @@
+{
+ "cls": "header-carousel owl-carousel owl-loaded owl-drag",
+ "items": 5,
+ "active": 1
+}

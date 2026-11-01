@@ -1,21 +1,21 @@
 {
   "version": 1,
-  "direction": "Contemporary Accession Folio",
+  "direction": "Arabic Digital Library",
   "mode": "read",
   "tokens": {
     "colors": {
-      "paper": "#F5F0E6",
-      "paperRaised": "#FFFDF8",
-      "parchment": "#E9DFCC",
-      "ink": "#1D241F",
-      "inkMuted": "#5E665F",
-      "forest": "#173F34",
-      "forestLight": "#DDE8E1",
-      "brass": "#A77C32",
+      "paper": "#FCFBF8",
+      "paperRaised": "#FFFFFF",
+      "parchment": "#F5F3EF",
+      "ink": "#3D3D3D",
+      "inkMuted": "#746D64",
+      "forest": "#3D3D3D",
+      "forestLight": "#EEEAE4",
+      "brass": "#E98A00",
       "error": "#A23D32"
     },
     "fonts": {
-      "ui": "IBM Plex Sans Arabic",
+      "ui": "AlMohanad",
       "editorial": "Noto Naskh Arabic"
     },
     "radius": { "sheet": "2px", "control": "8px", "media": "12px" }
