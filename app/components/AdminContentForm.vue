@@ -3,6 +3,7 @@ import { Save } from '@lucide/vue'
 import { publishStatusLabels, type AdminCategory, type ContentDraft, type FieldErrors } from '~/types/admin'
 import { contentTypeLabels, contentTypes } from '~/types/content'
 import { suggestSlug } from '~/utils/admin-content'
+import { AdminError } from '~/repositories/admin/admin-repository'
 
 const draft = defineModel<ContentDraft>({ required: true })
 const { categories, errors, saving, isNew } = defineProps<{ categories: AdminCategory[]; errors: FieldErrors; saving: boolean; isNew: boolean }>()
@@ -16,6 +17,29 @@ const statusOptions = computed(() => draft.value.status === 'scheduled'
 function toggleCategory(id: string, checked: boolean) {
   const rest = draft.value.categoryIds.filter(entry => entry !== id)
   draft.value.categoryIds = checked ? [...rest, id] : rest
+}
+
+const uploading = ref(false)
+const uploadError = ref('')
+const uploadedName = ref('')
+
+async function onPdfPicked(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  uploading.value = true
+  uploadError.value = ''
+  try {
+    draft.value.pdfUrl = await (await useAdminRepository()).uploadPdf(file)
+    uploadedName.value = file.name
+  }
+  catch (error) {
+    uploadError.value = error instanceof AdminError ? error.message : 'تعذر رفع الملف. حاول مرة أخرى.'
+  }
+  finally {
+    uploading.value = false
+    input.value = ''
+  }
 }
 
 function onTypeChange() {
@@ -68,7 +92,12 @@ function onTypeChange() {
             <AdminField v-slot="{ id, describedBy, invalid }" label="عدد الصفحات" :error="errors.pageCount">
               <input :id="id" v-model="draft.pageCount" inputmode="numeric" type="text" :aria-invalid="invalid" :aria-describedby="describedBy">
             </AdminField>
-            <AdminField v-slot="{ id, describedBy, invalid }" label="رابط ملف PDF" :error="errors.pdfUrl">
+            <AdminField v-slot="{ id, describedBy }" label="رفع ملف PDF" hint="اختر ملفًا من جهازك (حتى 50 ميجابايت). يُحفظ الرابط تلقائيًا." :error="uploadError || undefined">
+              <input :id="id" type="file" accept="application/pdf,.pdf" :disabled="uploading" :aria-describedby="describedBy" @change="onPdfPicked">
+            </AdminField>
+            <p v-if="uploading" class="admin-muted" role="status">جارٍ رفع الملف…</p>
+            <p v-else-if="uploadedName" class="admin-muted" role="status">تم رفع الملف: <bdi>{{ uploadedName }}</bdi>. اضغط «حفظ المادة» لتثبيته.</p>
+            <AdminField v-slot="{ id, describedBy, invalid }" label="أو رابط ملف PDF خارجي" :error="errors.pdfUrl">
               <input :id="id" v-model="draft.pdfUrl" dir="ltr" type="url" class="ltr-input" :aria-invalid="invalid" :aria-describedby="describedBy">
             </AdminField>
           </div>

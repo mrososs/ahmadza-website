@@ -62,7 +62,9 @@ const profileRowSchema = z.object({
   active: z.boolean(),
 })
 
-const SUMMARY_COLUMNS = 'id, type, slug, title, status, featured, published_at, updated_at'
+const PDF_BUCKET = 'publications'
+const MAX_PDF_BYTES = 50 * 1024 * 1024
+const SUMMARY_COLUMNS ='id, type, slug, title, status, featured, published_at, updated_at'
 const RECORD_COLUMNS = `${SUMMARY_COLUMNS}, excerpt, body, scheduled_at, reading_minutes, metadata, seo_title, seo_description, content_categories(category_id)`
 
 function parseRows<T>(schema: z.ZodType<T>, rows: unknown): T[] {
@@ -287,6 +289,18 @@ class SupabaseAdminRepository implements AdminRepository {
   async deleteContent(id: string): Promise<void> {
     const { error } = await this.client.from('content_items').delete().eq('id', id)
     if (error) throw failure(error, 'تعذر حذف المادة.')
+  }
+
+  async uploadPdf(file: File): Promise<string> {
+    if (file.type !== 'application/pdf') throw new AdminError('الملف يجب أن يكون بصيغة PDF.')
+    if (file.size > MAX_PDF_BYTES) throw new AdminError('حجم الملف أكبر من 50 ميجابايت.')
+    await this.currentUserId()
+
+    // A random name avoids collisions and keeps Arabic file names out of the public URL.
+    const path = `books/${crypto.randomUUID()}.pdf`
+    const { error } = await this.client.storage.from(PDF_BUCKET).upload(path, file, { contentType: 'application/pdf', cacheControl: '31536000', upsert: false })
+    if (error) throw failure({ message: error.message }, 'تعذر رفع الملف. حاول مرة أخرى.')
+    return this.client.storage.from(PDF_BUCKET).getPublicUrl(path).data.publicUrl
   }
 
   async listCategories(): Promise<AdminCategory[]> {

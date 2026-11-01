@@ -93,6 +93,10 @@ class DemoAdminRepository implements AdminRepository {
     this.records.delete(id)
   }
 
+  async uploadPdf(): Promise<string> {
+    throw new AdminError('رفع الملفات غير متاح في النسخة التجريبية.')
+  }
+
   async listCategories() {
     return [...this.categories.values()].toSorted((left, right) => left.sortOrder - right.sortOrder)
   }

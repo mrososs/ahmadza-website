@@ -37,6 +37,8 @@ export interface AdminRepository {
   getContent(id: string): Promise<AdminContentRecord | null>
   saveContent(draft: ContentDraft, id?: string): Promise<string>
   deleteContent(id: string): Promise<void>
+  /** Stores a PDF in public storage and returns its public URL. Rejects with an editor-readable AdminError. */
+  uploadPdf(file: File): Promise<string>
   listCategories(): Promise<AdminCategory[]>
   saveCategory(input: CategoryInput, id?: string): Promise<void>
 }
