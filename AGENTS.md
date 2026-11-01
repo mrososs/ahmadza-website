@@ -2,7 +2,7 @@
 
 ## Product boundary
 
-This repository contains one Arabic-first Nuxt 4 public website. The public experience is in scope; the future admin CMS, migration utilities, deployment, and DNS are not. Demo content must remain explicitly labeled and must never be presented as client fact.
+This repository contains one Arabic-first Nuxt 4 public website and its content console at `/admin` (see `docs/ADMIN.md`). Migration utilities, deployment, and DNS are out of scope. Demo content must remain explicitly labeled and must never be presented as client fact.
 
 ## Architecture
 
@@ -51,3 +51,9 @@ This repository contains one Arabic-first Nuxt 4 public website. The public expe
 
 - Required before handoff: `npm run typecheck`, `npm run build`, and `npm run test:e2e`.
 - Browser checks cover 360, 390, 768, 1024, and 1440 widths, keyboard navigation, search, mobile navigation, detail routes, copy-link behavior, and media empty states.
+
+## Admin console
+
+- Admin routes live under `app/pages/admin/`, use the `admin` layout and `admin` middleware, and are never SSR, indexed, or linked from public pages.
+- Admin data goes through `AdminRepository` (`app/repositories/admin/`); the demo adapter is dev-only and must stay a dynamic import.
+- The browser uses only the publishable key. RLS is the authorization boundary; the route guard is UX.

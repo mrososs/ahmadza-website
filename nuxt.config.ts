@@ -14,7 +14,11 @@ export default defineNuxtConfig({
     '@fontsource/noto-naskh-arabic/700.css',
     '~/assets/css/main.css',
   ],
-  vite: { plugins: [tailwindcss()] },
+  vite: {
+    plugins: [tailwindcss()],
+    // Pre-bundle so a cold dev server does not re-optimize and hard-reload the page mid-session.
+    optimizeDeps: { include: ['zod', '@lucide/vue', '@supabase/supabase-js'] },
+  },
   app: {
     head: {
       htmlAttrs: { lang: 'ar', dir: 'rtl' },
@@ -29,6 +33,9 @@ export default defineNuxtConfig({
     supabaseUrl: '',
     supabasePublishableKey: '',
     public: {
+      // The publishable key is designed for browsers; RLS and admin_profiles gate every write.
+      supabaseUrl: '',
+      supabasePublishableKey: '',
       siteUrl: 'https://prof-ahmadza.com',
       siteName: 'مكتبة أحمد زايد الرقمية',
       authorDisplayName: 'أحمد زايد',
@@ -38,9 +45,10 @@ export default defineNuxtConfig({
     url: process.env.NUXT_PUBLIC_SITE_URL || 'https://prof-ahmadza.com',
     name: 'مكتبة أحمد زايد الرقمية',
   },
-  sitemap: { sources: ['/api/__sitemap__/urls'] },
+  sitemap: { sources: ['/api/__sitemap__/urls'], exclude: ['/admin', '/admin/**'] },
   routeRules: {
-    '/': { prerender: true },
+    '/admin/**': { ssr: false, headers: { 'x-robots-tag': 'noindex, nofollow' } },
+    '/': { swr: 3600 },
     '/about': { prerender: true },
     '/articles/**': { swr: 3600 },
     '/books/**': { swr: 3600 },

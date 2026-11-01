@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   testDir: './tests',
+  globalSetup: './tests/global-setup.ts',
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
@@ -20,7 +21,9 @@ export default defineConfig({
   webServer: {
     command: 'npx nuxt cleanup && npx nuxt dev --host 127.0.0.1',
     url: 'http://127.0.0.1:3000',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    // Tests always run on the labelled demo data, never against a real Supabase project from a local .env.
+    env: { NUXT_SUPABASE_URL: '', NUXT_SUPABASE_PUBLISHABLE_KEY: '', NUXT_PUBLIC_SUPABASE_URL: '', NUXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: '' },
+    reuseExistingServer: false,
+    timeout: 300_000,
   },
 })
