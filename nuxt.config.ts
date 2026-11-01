@@ -48,17 +48,14 @@ export default defineNuxtConfig({
   sitemap: { sources: ['/api/__sitemap__/urls'], exclude: ['/admin', '/admin/**'] },
   routeRules: {
     '/admin/**': { ssr: false, headers: { 'x-robots-tag': 'noindex, nofollow' } },
-    '/': { swr: 60 },
+    // Content pages are rendered per request on purpose: stale-while-revalidate kept serving an empty list
+    // after an editor published, and editors expect to see their change as soon as they open the site.
     '/about': { prerender: true },
-    '/articles/**': { swr: 60 },
-    '/books/**': { swr: 60 },
-    '/sermons/**': { swr: 60 },
-    '/audio/**': { swr: 60 },
-    '/benefits/**': { swr: 60 },
-    '/videos': { swr: 60 },
   },
   nitro: {
-    prerender: { crawlLinks: true, routes: ['/robots.txt'] },
+    // No crawlLinks: crawling /about's navigation froze every content list (and any item that existed at build
+    // time) into static HTML, so books published later never appeared. Only truly static routes are prerendered.
+    prerender: { crawlLinks: false, routes: ['/robots.txt'] },
   },
   typescript: { typeCheck: true, strict: true },
 })

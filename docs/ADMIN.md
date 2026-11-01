@@ -68,12 +68,10 @@ Required Supabase dashboard settings (Authentication → URL Configuration), whi
 - `published` rows become public when `published_at <= now()`. Leaving the date empty publishes immediately; a future date keeps the item hidden until then (no cron needed).
 - `scheduled` status is read-only legacy: no job promotes it, so the editor does not offer it for new items.
 - Slugs must match `^[a-z0-9]+(?:-[a-z0-9]+)*$` (database constraint); a unique one is suggested for new items.
-- Public pages use ISR (`swr: 3600`), so edits can take up to an hour to appear.
+- Public content pages are rendered per request (no page cache), so published changes appear on the next page load.
 
 ## Known gaps / next steps
 
-- File upload to the `publications` storage bucket (audio, PDF, covers). Today the editor takes URLs.
 - Site settings screen: the `site_settings` table exists, but there is no UI and the public site does not read it yet.
 - Rich text beyond paragraphs, headings and a pull quote.
 - Role-based UI (owners vs editors) and an admin-users screen.
-- Cache purge on save instead of waiting for SWR expiry.
