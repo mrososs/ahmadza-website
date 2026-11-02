@@ -66,6 +66,7 @@ const book = (seed: Seed, publicationYear: number, pageCount: number): ContentIt
   authorLabel: 'بيانات المؤلف قيد التزويد',
   publicationYear,
   pageCount,
+  downloadAllowed: false,
   sections: [{ id: 'description', heading: 'عن هذا النموذج', paragraphs: [demoNotice, seed.body] }],
 })
 

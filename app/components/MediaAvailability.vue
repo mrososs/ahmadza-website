@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { FileQuestion, Headphones, Play } from '@lucide/vue'
 import type { AudioContent, BookContent, VideoContent } from '~/types/content'
+import { bookDownloadUrl } from '~/utils/book-download'
 import { formatDuration } from '~/utils/format'
 
 const { item } = defineProps<{ item: AudioContent | BookContent | VideoContent }>()
 const isDemo = useIsDemoContent()
 const isReading = shallowRef(false)
+const downloadHref = computed(() => item.type === 'book' && item.pdfUrl && item.downloadAllowed ? bookDownloadUrl(item.pdfUrl, item.slug) : '')
 </script>
 
 <template>
@@ -27,13 +29,14 @@ const isReading = shallowRef(false)
       <div>
         <h2>نسخة الكتاب</h2>
         <p v-if="item.pageCount">{{ item.pageCount }} صفحة</p>
-        <p v-if="item.pdfUrl">متاح للقراءة على الموقع فقط.</p>
+        <p v-if="item.pdfUrl">{{ item.downloadAllowed ? 'يمكنك قراءة الكتاب على الموقع أو تنزيله.' : 'متاح للقراءة على الموقع فقط.' }}</p>
       </div>
       <template v-if="item.pdfUrl">
         <div class="media-availability__actions">
           <button type="button" class="button-primary" :aria-expanded="isReading" aria-controls="book-reader" @click="isReading = !isReading">
             {{ isReading ? 'إخفاء الكتاب' : 'قراءة الكتاب' }}
           </button>
+          <a v-if="downloadHref" class="button-primary" :href="downloadHref" download>تنزيل PDF</a>
         </div>
         <BookReader v-if="isReading" id="book-reader" :src="item.pdfUrl" :title="item.title" />
       </template>

@@ -53,6 +53,8 @@ export interface BookContent extends ContentBase {
   pageCount?: number
   pdfUrl?: string
   coverUrl?: string
+  /** When true the book page also offers the PDF as a download. Off by default: books are read on the site. */
+  downloadAllowed: boolean
 }
 
 export interface AudioContent extends ContentBase {
