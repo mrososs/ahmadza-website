@@ -53,7 +53,6 @@ export interface BookContent extends ContentBase {
   pageCount?: number
   pdfUrl?: string
   coverUrl?: string
-  downloadAllowed: boolean
 }
 
 export interface AudioContent extends ContentBase {

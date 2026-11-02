@@ -71,7 +71,6 @@ function onTypeChange() {
           </div>
           <AdminFileUpload v-model="draft.pdfUrl" kind="pdf" label="ملف الكتاب (PDF)" hint="ملف PDF حتى 50 ميجابايت." :error="errors.pdfUrl" />
           <AdminFileUpload v-model="draft.coverUrl" kind="image" label="غلاف الكتاب" hint="صورة JPG أو PNG أو WEBP حتى 5 ميجابايت، يفضّل أن تكون طولية." :error="errors.coverUrl" />
-          <label class="admin-check"><input v-model="draft.downloadAllowed" type="checkbox"> السماح بتنزيل الكتاب</label>
         </section>
 
         <section v-if="draft.type === 'audio'" class="admin-card" aria-labelledby="f-audio">

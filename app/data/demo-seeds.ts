@@ -66,7 +66,6 @@ const book = (seed: Seed, publicationYear: number, pageCount: number): ContentIt
   authorLabel: 'بيانات المؤلف قيد التزويد',
   publicationYear,
   pageCount,
-  downloadAllowed: false,
   sections: [{ id: 'description', heading: 'عن هذا النموذج', paragraphs: [demoNotice, seed.body] }],
 })
 
@@ -97,7 +96,7 @@ export const seededDemoContent: readonly ContentItem[] = [
   book({ slug: 'introduction-to-research-skills', title: 'مدخل إلى مهارات البحث', excerpt: 'كتاب تجريبي لعرض صفحة كتاب في مجال الدراسات، من غير ملف مرفق.', date: '2026-02-10', categories: [studies, learning], featured: true, body: 'يعرض هذا السجل التجريبي كيف تُقدَّم بيانات الكتاب: العنوان والوصف وعدد الصفحات وسنة النشر، مع بيان صادق بعدم توفر ملف PDF.', point: '' }, 2025, 142),
   book({ slug: 'a-short-guide-to-student-manners', title: 'مختصر في آداب طالب العلم', excerpt: 'نموذج كتاب مختصر لاختبار قوائم الكتب والتصنيف.', date: '2025-11-05', categories: [summaries], body: 'سجل تجريبي يوضح شكل المختصرات في المكتبة وطريقة عرض بياناتها ووصفها القصير.', point: '' }, 2024, 96),
   book({ slug: 'readings-in-language-and-rhetoric', title: 'قراءات في اللغة والبيان', excerpt: 'كتاب تجريبي يختبر العناوين الطويلة وعرض التصنيفات اللغوية.', date: '2025-08-14', categories: [language, studies], body: 'نموذج لكتاب في اللغة والبيان، يُستخدم هنا لمعاينة تخطيط الصفحة قبل إضافة الإصدارات الحقيقية.', point: '' }, 2025, 210),
-  book({ slug: 'lives-and-lessons', title: 'سيَر وعِبر', excerpt: 'نموذج كتاب في التاريخ والسيَر لمعاينة صفحات الكتب المتعددة.', date: '2025-03-22', categories: [history], body: 'سجل تجريبي لكتاب في السيَر والعبر، من دون ادعاء بوجود إصدار أو رابط تنزيل.', point: '' }, 2023, 168),
+  book({ slug: 'lives-and-lessons', title: 'سيَر وعِبر', excerpt: 'نموذج كتاب في التاريخ والسيَر لمعاينة صفحات الكتب المتعددة.', date: '2025-03-22', categories: [history], body: 'سجل تجريبي لكتاب في السيَر والعبر، من دون ادعاء بوجود إصدار أو ملف قراءة.', point: '' }, 2023, 168),
 
   // Audio (7 more than the hand-written two)
   audio({ slug: 'research-skills-part-1', title: 'مدخل إلى مهارات البحث – الحلقة 1', excerpt: 'تسجيل تجريبي: تحديد موضوع البحث وصياغة السؤال الرئيس.', date: '2026-10-12', categories: [lessons], featured: true, body: 'تتناول هذه الحلقة التجريبية كيف يتحول الاهتمام العام إلى سؤال بحثي محدد يمكن الإجابة عنه.', point: '' }, 2460),

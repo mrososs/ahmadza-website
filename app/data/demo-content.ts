@@ -63,8 +63,7 @@ const coreDemoContent: readonly ContentItem[] = [
     authorLabel: 'بيانات المؤلف قيد التزويد',
     publicationYear: 2026,
     pageCount: 184,
-    downloadAllowed: false,
-    sections: [{ id: 'description', heading: 'عن هذا النموذج', paragraphs: [demoNotice, 'يعرض هذا السجل التجريبي طريقة تقديم غلاف الكتاب ووصفه وبياناته وحالة توفر الملف، من دون الادعاء بوجود إصدار أو رابط تنزيل حقيقي.'] }],
+    sections: [{ id: 'description', heading: 'عن هذا النموذج', paragraphs: [demoNotice, 'يعرض هذا السجل التجريبي طريقة تقديم غلاف الكتاب ووصفه وبياناته وحالة توفر الملف، من دون الادعاء بوجود إصدار أو ملف قراءة حقيقي.'] }],
   },
   {
     id: 'book-reading-map',
@@ -79,7 +78,6 @@ const coreDemoContent: readonly ContentItem[] = [
     featured: false,
     authorLabel: 'بيانات المؤلف قيد التزويد',
     publicationYear: 2025,
-    downloadAllowed: false,
     sections: [{ id: 'description', paragraphs: [demoNotice] }],
   },
   {

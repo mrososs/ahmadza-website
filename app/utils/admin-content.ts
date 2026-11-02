@@ -38,7 +38,6 @@ export const draftSchema = z.object({
   pageCount: optionalInt('عدد الصفحات', 20000),
   pdfUrl: optionalUrl,
   coverUrl: optionalUrl,
-  downloadAllowed: z.boolean(),
   audioUrl: optionalUrl,
   durationSeconds: optionalInt('المدة', 86400),
   youtubeId: z.string().trim().refine(value => value === '' || youtubeIdPattern.test(value), 'معرّف يوتيوب مكوّن من 11 رمزًا'),
@@ -80,7 +79,6 @@ export function draftToMetadata(draft: ContentDraft): Record<string, unknown> {
         pageCount: toInt(draft.pageCount),
         pdfUrl: draft.pdfUrl.trim(),
         coverUrl: draft.coverUrl.trim(),
-        downloadAllowed: draft.downloadAllowed,
       })
     case 'audio':
       return clean({ audioUrl: draft.audioUrl.trim(), durationSeconds: toInt(draft.durationSeconds) })
@@ -89,7 +87,7 @@ export function draftToMetadata(draft: ContentDraft): Record<string, unknown> {
   }
 }
 
-export function metadataToDraftFields(type: ContentType, metadata: Record<string, unknown>): Pick<ContentDraft, 'linkedAudioSlug' | 'authorLabel' | 'publicationYear' | 'pageCount' | 'pdfUrl' | 'coverUrl' | 'downloadAllowed' | 'audioUrl' | 'durationSeconds' | 'youtubeId'> {
+export function metadataToDraftFields(type: ContentType, metadata: Record<string, unknown>): Pick<ContentDraft, 'linkedAudioSlug' | 'authorLabel' | 'publicationYear' | 'pageCount' | 'pdfUrl' | 'coverUrl' | 'audioUrl' | 'durationSeconds' | 'youtubeId'> {
   const text = (key: string) => typeof metadata[key] === 'string' ? metadata[key] : ''
   const num = (key: string) => typeof metadata[key] === 'number' ? String(metadata[key]) : ''
   return {
@@ -99,7 +97,6 @@ export function metadataToDraftFields(type: ContentType, metadata: Record<string
     pageCount: type === 'book' ? num('pageCount') : '',
     pdfUrl: type === 'book' ? text('pdfUrl') : '',
     coverUrl: type === 'book' ? text('coverUrl') : '',
-    downloadAllowed: type === 'book' && metadata.downloadAllowed === true,
     audioUrl: type === 'audio' ? text('audioUrl') : '',
     durationSeconds: type === 'audio' || type === 'video' ? num('durationSeconds') : '',
     youtubeId: type === 'video' ? text('youtubeId') : '',
@@ -114,7 +111,7 @@ export function itemToDraftFields(item: ContentItem): ReturnType<typeof metadata
     case 'sermon':
       return metadataToDraftFields('sermon', { linkedAudioSlug: item.linkedAudioSlug })
     case 'book':
-      return metadataToDraftFields('book', { authorLabel: item.authorLabel, publicationYear: item.publicationYear, pageCount: item.pageCount, pdfUrl: item.pdfUrl, coverUrl: item.coverUrl, downloadAllowed: item.downloadAllowed })
+      return metadataToDraftFields('book', { authorLabel: item.authorLabel, publicationYear: item.publicationYear, pageCount: item.pageCount, pdfUrl: item.pdfUrl, coverUrl: item.coverUrl })
     case 'audio':
       return metadataToDraftFields('audio', { audioUrl: item.audioUrl, durationSeconds: item.durationSeconds })
     case 'video':
