@@ -8,6 +8,7 @@ import type {
   AdminStats,
   ContentDraft,
 } from '~/types/admin'
+import type { BrandingImage, BrandingSlot, PreparedBrandingImage, SiteBranding } from '~/types/branding'
 import type { MediaKind } from '~/utils/media-upload'
 
 export type CategoryInput = Pick<AdminCategory, 'slug' | 'name' | 'description' | 'sortOrder' | 'active'>
@@ -42,6 +43,15 @@ export interface AdminRepository {
   uploadMedia(kind: MediaKind, file: File, onProgress?: (percent: number) => void): Promise<string>
   listCategories(): Promise<AdminCategory[]>
   saveCategory(input: CategoryInput, id?: string): Promise<void>
+  /** The header logo and hero image as stored; the bundled artwork where no override exists. */
+  getSiteBranding(): Promise<SiteBranding>
+  /**
+   * Owners only. Uploads the image to the branding bucket, then points the slot's setting at it. If the setting cannot be
+   * saved the new file is removed and the current image stays live. `onProgress` receives 0–100.
+   */
+  saveBrandingImage(slot: BrandingSlot, image: PreparedBrandingImage, onProgress?: (percent: number) => void): Promise<BrandingImage>
+  /** Owners only. Removes the override so the slot shows the bundled image again, and returns that image. Uploaded files are kept. */
+  resetBrandingImage(slot: BrandingSlot): Promise<BrandingImage>
 }
 
 export interface AdminBackend {

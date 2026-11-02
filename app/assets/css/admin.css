@@ -13,6 +13,7 @@
   --admin-chrome-line: rgb(255 255 255 / 14%);
   --admin-danger: var(--error, #a23d32);
   --admin-success: #2f6b3f;
+  --admin-stage: #454545; /* the ground of .site-header and .library-masthead in main.css */
   font-family: var(--font-library, "AlMohanad", "Noto Naskh Arabic", serif);
   color: var(--admin-ink);
   line-height: 1.7;
@@ -83,6 +84,8 @@
 .admin-alert--error { border-color: var(--admin-danger); color: #7d2c24; background: #fdf3f1; }
 .admin-alert--success { border-color: var(--admin-success); color: #234f30; background: #f1f8f3; }
 .admin-alert--demo { border-color: var(--admin-orange); background: #fff7e8; color: #5c3a00; }
+.admin-alert--warning { display: flex; align-items: flex-start; gap: .6rem; border-color: var(--admin-orange); background: #fff7e8; color: #5c3a00; }
+.admin-alert--warning svg { flex: none; margin-block-start: .3rem; }
 .admin-live { min-height: 0; }
 .admin-badge { display: inline-block; padding: .05rem .7rem; border-radius: 999px; font-size: .85rem; border: 1px solid currentcolor; white-space: nowrap; }
 .admin-badge--published { color: var(--admin-success); }
@@ -191,3 +194,22 @@ a.admin-button { text-decoration: none; }
 .file-upload__preview { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin-block-end: 1rem; }
 .file-upload__preview img { width: 120px; height: 180px; object-fit: cover; border: 1px solid var(--admin-line); }
 .file-upload__preview audio { max-width: 100%; }
+
+/* Site branding: each preview sits on the live site's ground at the live site's proportions. */
+.branding-intro { max-inline-size: 70ch; margin-block-end: 1.25rem; }
+.branding-compare { display: grid; gap: 1rem; grid-template-columns: 1fr; margin-block: 1rem; }
+@media (min-width: 720px) { .branding-compare { grid-template-columns: 1fr 1fr; } }
+.branding-figure { display: grid; align-content: start; gap: .5rem; margin: 0; padding: .75rem; border: 1px solid var(--admin-line); border-radius: 8px; background: #fcfbf8; min-width: 0; }
+.branding-figure figcaption, .branding-figure__caption { margin: 0; font-weight: 700; }
+.branding-figure__meta { margin: 0; color: #5f5f5f; font-size: .85rem; }
+.branding-figure--empty { align-content: center; border-style: dashed; text-align: center; }
+.branding-stage { position: relative; isolation: isolate; display: grid; place-items: center; overflow: hidden; border-radius: 6px; background: var(--admin-stage); }
+.branding-stage--headerLogo { min-block-size: 132px; padding: 1rem; }
+.branding-stage--headerLogo img { inline-size: 145px; block-size: 112px; object-fit: contain; }
+.branding-stage--heroImage { aspect-ratio: 14 / 11; padding: 4%; }
+.branding-stage--heroImage::before { content: ''; position: absolute; z-index: -1; inset: 0; background: url('/ornaments/floral-medallion.png') center / 70% no-repeat; opacity: .12; filter: grayscale(1) sepia(1); }
+.branding-stage--heroImage img { inline-size: 100%; block-size: 100%; object-fit: contain; }
+.branding-helper { max-inline-size: 60ch; margin: 0 0 .75rem; white-space: pre-line; color: #4a4a4a; }
+.branding-helper--hint { padding-inline-start: .75rem; border-inline-start: 3px solid var(--admin-orange); }
+.branding-warnings { list-style: none; margin: 0; padding: 0; }
+.branding-slot .admin-alert { margin-block-end: .75rem; }

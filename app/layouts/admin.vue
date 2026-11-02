@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ExternalLink, FilePlus2, LayoutDashboard, Library, LogOut, Menu, X } from '@lucide/vue'
+import { ExternalLink, FilePlus2, LayoutDashboard, Library, LogOut, Menu, Palette, X } from '@lucide/vue'
+import type { Component } from 'vue'
 import { contentTypePluralLabels, contentTypes } from '~/types/content'
 import '~/assets/css/admin.css'
 
@@ -8,13 +9,20 @@ const { profile, mode, signOut } = useAdminSession()
 const { notice, clear } = useAdminNotice()
 const isOpen = shallowRef(false)
 
-const links = [
+const { image: logo, bind: bindLogo, onError: onLogoError } = useBrandingImage('headerLogo')
+
+interface NavLink { to: string; label: string; icon: Component; exact: boolean }
+const contentLinks: NavLink[] = [
   { to: '/admin', label: 'لوحة التحكم', icon: LayoutDashboard, exact: true },
   { to: '/admin/content', label: 'المحتوى', icon: Library, exact: false },
   { to: '/admin/content/new', label: 'مادة جديدة', icon: FilePlus2, exact: true },
 ]
+// Branding is an owner-only setting (the database enforces it), so editors are not shown the entry.
+const links = computed<NavLink[]>(() => profile.value?.role === 'owner'
+  ? [...contentLinks, { to: '/admin/branding', label: 'هوية الموقع', icon: Palette, exact: true }]
+  : contentLinks)
 
-const isActive = (link: (typeof links)[number]) => link.exact
+const isActive = (link: NavLink) => link.exact
   ? route.path === link.to
   // "المحتوى" must not stay highlighted on the "مادة جديدة" route.
   : route.path.startsWith(link.to) && route.path !== '/admin/content/new'
@@ -44,7 +52,7 @@ useSeoMeta({ robots: 'noindex, nofollow' })
 
     <header class="admin-topbar">
       <NuxtLink to="/admin" class="admin-brand" aria-label="لوحة تحكم موقع أحمد زايد">
-        <img src="/ornaments/ahmad-zayed-logo-client.png" alt="" width="1448" height="1086">
+        <img :ref="bindLogo" :src="logo.url" alt="" :width="logo.width" :height="logo.height" @error="onLogoError">
         <span><strong>لوحة التحكم</strong><small>موقع أحمد زايد</small></span>
       </NuxtLink>
       <button class="admin-menu-button" type="button" :aria-expanded="isOpen" aria-controls="admin-nav" :aria-label="isOpen ? 'إغلاق القائمة' : 'فتح القائمة'" @click="isOpen = !isOpen">

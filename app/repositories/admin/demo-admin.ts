@@ -2,7 +2,9 @@ import { demoCategories, demoContent } from '~/data/demo-content'
 import { contentTypes, type ContentType, type PublishStatus } from '~/types/content'
 import type { AdminCategory, AdminContentFilter, AdminContentRecord, AdminContentSummary, AdminProfile, AdminStats, ContentDraft } from '~/types/admin'
 import { publishStatuses } from '~/types/admin'
+import type { BrandingImage, BrandingSlot, PreparedBrandingImage, SiteBranding } from '~/types/branding'
 import { cleanSections, itemToDraftFields } from '~/utils/admin-content'
+import { defaultSiteBranding } from '~/utils/branding'
 import { AdminError, type AdminAuth, type AdminBackend, type AdminRepository, type CategoryInput } from '~/repositories/admin/admin-repository'
 
 /** Development-only sandbox: in-memory, resets on reload, and never reachable in production builds. */
@@ -23,6 +25,7 @@ class DemoAdminRepository implements AdminRepository {
   readonly source = 'demo'
   private readonly records = new Map<string, AdminContentRecord & { updatedAt: string }>()
   private readonly categories = new Map<string, AdminCategory>()
+  private readonly branding = defaultSiteBranding()
 
   constructor() {
     demoCategories.forEach((category, index) => {
@@ -104,6 +107,31 @@ class DemoAdminRepository implements AdminRepository {
   async saveCategory(input: CategoryInput, id?: string) {
     const key = id ?? crypto.randomUUID()
     this.categories.set(key, { id: key, ...input })
+  }
+
+  async getSiteBranding(): Promise<SiteBranding> {
+    return { headerLogo: { ...this.branding.headerLogo }, heroImage: { ...this.branding.heroImage } }
+  }
+
+  async saveBrandingImage(slot: BrandingSlot, image: PreparedBrandingImage, onProgress?: (percent: number) => void): Promise<BrandingImage> {
+    // No storage in the sandbox: the image lives as a blob URL until the page reloads.
+    for (const percent of [35, 70, 100]) {
+      onProgress?.(percent)
+      await new Promise(resolve => setTimeout(resolve, 60))
+    }
+    this.releaseBlob(slot)
+    this.branding[slot] = { url: URL.createObjectURL(image.file), width: image.width, height: image.height, alt: image.alt, custom: true }
+    return { ...this.branding[slot] }
+  }
+
+  async resetBrandingImage(slot: BrandingSlot): Promise<BrandingImage> {
+    this.releaseBlob(slot)
+    this.branding[slot] = defaultSiteBranding()[slot]
+    return { ...this.branding[slot] }
+  }
+
+  private releaseBlob(slot: BrandingSlot) {
+    if (this.branding[slot].custom) URL.revokeObjectURL(this.branding[slot].url)
   }
 }
 

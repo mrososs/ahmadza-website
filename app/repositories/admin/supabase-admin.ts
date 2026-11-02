@@ -11,6 +11,9 @@ import type {
   ContentDraft,
 } from '~/types/admin'
 import { publishStatuses } from '~/types/admin'
+import type { BrandingImage, BrandingSlot, PreparedBrandingImage, SiteBranding } from '~/types/branding'
+import { brandingBucket, brandingExtension, brandingSettingKeys, brandingSpecs, brandingStorageBase, defaultSiteBranding, validateBrandingFile } from '~/utils/branding'
+import { parseBrandingRows } from '~/utils/branding-rows'
 import { mediaExtension, mediaSpecs, validateMediaFile, type MediaKind } from '~/utils/media-upload'
 import { cleanSections,draftToMetadata, isoToLocalInput, localInputToIso, metadataToDraftFields } from '~/utils/admin-content'
 import { AdminError, type AdminAuth, type AdminBackend, type AdminRepository, type CategoryInput } from '~/repositories/admin/admin-repository'
@@ -306,27 +309,70 @@ class SupabaseAdminRepository implements AdminRepository {
     if (error) throw failure(error, 'تعذر حذف المادة.')
   }
 
-  async uploadMedia(kind: MediaKind, file: File, onProgress?: (percent: number) => void): Promise<string> {
-    const problem = validateMediaFile(kind, file)
-    if (problem) throw new AdminError(problem)
-    const extension = mediaExtension(kind, file.type)
+  /** Uploads to a public bucket with the editor's session and returns the object's public URL. */
+  private async putObject(bucket: string, path: string, file: File, onProgress?: (percent: number) => void): Promise<string> {
     const { data } = await this.client.auth.getSession()
-    if (!data.session || !extension) throw new AdminError('انتهت الجلسة. سجّل الدخول من جديد.')
+    if (!data.session) throw new AdminError('انتهت الجلسة. سجّل الدخول من جديد.')
 
-    // A random name avoids collisions and keeps Arabic file names out of the public URL.
-    const path = `${mediaSpecs[kind].folder}/${crypto.randomUUID()}.${extension}`
     const body = new FormData()
     body.append('cacheControl', '31536000')
     body.append('', file)
     // supabase-js cannot report upload progress, so the same storage endpoint is called directly with the editor's session.
-    const status = await sendWithProgress(`${this.url}/storage/v1/object/${MEDIA_BUCKET}/${path}`, { apikey: this.publishableKey, authorization: `Bearer ${data.session.access_token}` }, body, onProgress)
+    const status = await sendWithProgress(`${this.url}/storage/v1/object/${bucket}/${path}`, { apikey: this.publishableKey, authorization: `Bearer ${data.session.access_token}` }, body, onProgress)
     if (status === 401 || status === 403) throw new AdminError('ليست لديك صلاحية رفع الملفات. سجّل الدخول من جديد.')
     if (status === 413) throw new AdminError('حجم الملف أكبر من الحد المسموح به.')
     if (status < 200 || status >= 300) {
-      console.error('[admin] media upload failed', status)
+      console.error('[admin] upload failed', bucket, status)
       throw new AdminError('تعذر رفع الملف. تحقق من الاتصال وحاول مرة أخرى.')
     }
-    return this.client.storage.from(MEDIA_BUCKET).getPublicUrl(path).data.publicUrl
+    return this.client.storage.from(bucket).getPublicUrl(path).data.publicUrl
+  }
+
+  async uploadMedia(kind: MediaKind, file: File, onProgress?: (percent: number) => void): Promise<string> {
+    const problem = validateMediaFile(kind, file)
+    if (problem) throw new AdminError(problem)
+    const extension = mediaExtension(kind, file.type)
+    if (!extension) throw new AdminError(mediaSpecs[kind].wrongTypeMessage)
+
+    // A random name avoids collisions and keeps Arabic file names out of the public URL.
+    return this.putObject(MEDIA_BUCKET, `${mediaSpecs[kind].folder}/${crypto.randomUUID()}.${extension}`, file, onProgress)
+  }
+
+  async getSiteBranding(): Promise<SiteBranding> {
+    const { data, error } = await this.client.from('site_settings').select('key, value').in('key', [...brandingSettingKeys])
+    if (error) throw failure(error, 'تعذر تحميل هوية الموقع.')
+    return parseBrandingRows(data, brandingStorageBase(this.url))
+  }
+
+  async saveBrandingImage(slot: BrandingSlot, image: PreparedBrandingImage, onProgress?: (percent: number) => void): Promise<BrandingImage> {
+    const problem = validateBrandingFile(image.file)
+    if (problem) throw new AdminError(problem)
+    const extension = brandingExtension(image.file.type)
+    if (!extension) throw new AdminError('الصورة يجب أن تكون بصيغة PNG أو WebP.')
+
+    // Every upload gets a new path, so a saved image is never overwritten and each URL is safe to cache for good.
+    const spec = brandingSpecs[slot]
+    const storagePath = `${spec.folder}/${crypto.randomUUID()}.${extension}`
+    const url = await this.putObject(brandingBucket, storagePath, image.file, onProgress)
+
+    const value = { url, storagePath, alt: image.alt, width: image.width, height: image.height, updatedAt: new Date().toISOString() }
+    const { error } = await this.client.from('site_settings').upsert({ key: spec.settingKey, value, public_readable: true }, { onConflict: 'key' })
+    if (error) {
+      // The setting still points at the previous image, so the live site is untouched. Drop the file that was just uploaded.
+      const cleanup = await this.client.storage.from(brandingBucket).remove([storagePath])
+      if (cleanup.error) console.error('[admin] could not remove the unused branding upload', storagePath)
+      throw failure(error, 'تعذر حفظ الصورة. لم يتغير شيء على الموقع.')
+    }
+    // The replaced file is kept on purpose: pages cached elsewhere may still reference it until they reload.
+    return { url, width: image.width, height: image.height, alt: image.alt, custom: true }
+  }
+
+  async resetBrandingImage(slot: BrandingSlot): Promise<BrandingImage> {
+    const { error } = await this.client.from('site_settings').delete().eq('key', brandingSpecs[slot].settingKey)
+    if (error) throw failure(error, 'تعذر استعادة الصورة الافتراضية.')
+    // Row-level security hides rows from an unauthorized caller instead of raising, so confirm the override is really gone.
+    if ((await this.getSiteBranding())[slot].custom) throw new AdminError('ليست لديك صلاحية لتغيير هوية الموقع. هذه الصفحة للمالك فقط.')
+    return defaultSiteBranding()[slot]
   }
 
   async listCategories(): Promise<AdminCategory[]> {
