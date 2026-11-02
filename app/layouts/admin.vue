@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ExternalLink, FilePlus2, LayoutDashboard, Library, LogOut, Menu, Tags, X } from '@lucide/vue'
+import { ExternalLink, FilePlus2, LayoutDashboard, Library, LogOut, Menu, X } from '@lucide/vue'
 import { contentTypePluralLabels, contentTypes } from '~/types/content'
 import '~/assets/css/admin.css'
 
@@ -12,7 +12,6 @@ const links = [
   { to: '/admin', label: 'لوحة التحكم', icon: LayoutDashboard, exact: true },
   { to: '/admin/content', label: 'المحتوى', icon: Library, exact: false },
   { to: '/admin/content/new', label: 'مادة جديدة', icon: FilePlus2, exact: true },
-  { to: '/admin/categories', label: 'التصنيفات', icon: Tags, exact: false },
 ]
 
 const isActive = (link: (typeof links)[number]) => link.exact

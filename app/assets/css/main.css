@@ -239,6 +239,9 @@ img, svg, video, iframe { display: block; max-width: 100%; }
 .media-availability audio, .media-availability__empty, .media-availability .button-primary { grid-column: 1 / -1; }
 .media-availability audio { margin-block-start: .7rem; }
 .media-availability__empty { padding-block-start: 1rem; border-block-start: 1px solid rgb(255 255 255 / 18%); }
+.media-availability__actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .7rem; }
+.book-reader { grid-column: 1 / -1; block-size: min(80vh, 60rem); min-block-size: 24rem; background: white; }
+.book-reader iframe { inline-size: 100%; block-size: 100%; border: 0; }
 .video-embed { grid-column: 1 / -1; aspect-ratio: 16 / 9; }
 .video-embed iframe { width: 100%; height: 100%; border: 0; }
 .related-content { padding-block: 5rem; background: var(--paper-raised); border-block-start: 1px solid var(--rule); }

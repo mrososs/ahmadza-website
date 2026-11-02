@@ -124,7 +124,7 @@ function onTypeChange() {
 
         <section class="admin-card" aria-labelledby="f-cats">
           <h2 id="f-cats" class="admin-card__title">التصنيفات</h2>
-          <p v-if="!categories.length" class="admin-muted">لا توجد تصنيفات بعد. أضفها من صفحة التصنيفات.</p>
+          <p v-if="!categories.length" class="admin-muted">لا توجد تصنيفات بعد.</p>
           <label v-for="category in categories" :key="category.id" class="admin-check">
             <input type="checkbox" :checked="draft.categoryIds.includes(category.id)" @change="toggleCategory(category.id, ($event.target as HTMLInputElement).checked)">
             {{ category.name }}<small v-if="!category.active"> (مخفي)</small>
