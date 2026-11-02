@@ -13,6 +13,7 @@ export default defineConfig({
   testDir: './tests/branding',
   // Each flow signs in, uploads, saves and loads public pages against a dev server, which is slower than the default 30 s allows.
   timeout: 60_000,
+  expect: { timeout: 15_000 },
   fullyParallel: false,
   workers: 1,
   retries: 0,

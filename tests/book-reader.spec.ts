@@ -33,20 +33,24 @@ function buildPdf(pageCount: number): Buffer {
 }
 
 /** The demo data has no PDF on purpose, so give the book one for the browser only: on client navigation the detail API is fetched from the page. */
-async function serveBookPdf(page: Page) {
+async function serveBookPdf(page: Page, overrides: Record<string, unknown> = {}) {
   await page.route('**/api/content/book/*', async (route) => {
     const original = await (await route.fetch()).json() as { item: Record<string, unknown> }
-    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ...original, item: { ...original.item, pdfUrl: PDF_PATH } }) })
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ...original, item: { ...original.item, pdfUrl: PDF_PATH, ...overrides } }) })
   })
   await page.route(`**${PDF_PATH}`, route => route.fulfill({ status: 200, contentType: 'application/pdf', body: buildPdf(PAGES) }))
 }
 
-async function openBookReader(page: Page) {
-  await serveBookPdf(page)
+async function openBookPage(page: Page, overrides: Record<string, unknown> = {}) {
+  await serveBookPdf(page, overrides)
   await page.goto('/books')
   await waitForHydration(page)
   await page.getByRole('link', { name: BOOK_TITLE }).first().click()
   await expect(page).toHaveURL(new RegExp(`${BOOK_PATH}$`))
+}
+
+async function openBookReader(page: Page) {
+  await openBookPage(page)
   await page.getByRole('button', { name: 'قراءة الكتاب' }).click()
   return page.locator('#book-reader')
 }
@@ -58,7 +62,7 @@ test('a book without a PDF shows an honest empty state and no reader', async ({ 
   await expect(page.getByRole('button', { name: 'قراءة الكتاب' })).toHaveCount(0)
 })
 
-test('the book reader draws the PDF in the page and offers no way to download it', async ({ page }) => {
+test('the book reader draws the PDF in the page and, by default, offers no way to download it', async ({ page }) => {
   const reader = await openBookReader(page)
   const canvas = reader.locator('canvas')
 
@@ -87,6 +91,28 @@ test('the book reader draws the PDF in the page and offers no way to download it
 
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
   expect(overflow).toBeLessThanOrEqual(1)
+})
+
+test('a book that allows downloading offers a PDF download next to the reader', async ({ page }) => {
+  await openBookPage(page, { downloadAllowed: true })
+  const media = page.getByRole('region', { name: 'الوسائط' })
+  const download = media.getByRole('link', { name: 'تنزيل PDF' })
+  await expect(download).toBeVisible()
+  await expect(download).toHaveAttribute('download', '')
+  await expect(download).toHaveAttribute('href', PDF_PATH)
+  await expect(media.getByText('يمكنك قراءة الكتاب على الموقع أو تنزيله.')).toBeVisible()
+  // Reading on the site is still there, and still draws on a canvas rather than embedding the browser viewer.
+  await media.getByRole('button', { name: 'قراءة الكتاب' }).click()
+  await expect(page.locator('#book-reader canvas')).toBeVisible()
+  await expect(media.locator('iframe, embed, object')).toHaveCount(0)
+})
+
+test('a downloadable book stored in Supabase Storage is served as an attachment named after its slug', async ({ page }) => {
+  const stored = 'https://project.supabase.co/storage/v1/object/public/publications/books/0a1b2c3d.pdf'
+  await openBookPage(page, { pdfUrl: stored, downloadAllowed: true })
+  const href = await page.getByRole('link', { name: 'تنزيل PDF' }).getAttribute('href')
+  expect(new URL(href ?? '').searchParams.get('download')).toBe('notes-on-knowledge-building.pdf')
+  expect(href).toContain('/storage/v1/object/public/publications/books/0a1b2c3d.pdf')
 })
 
 test('the book reader turns pages with buttons, the page box and RTL arrow keys', async ({ page }) => {

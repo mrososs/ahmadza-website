@@ -51,6 +51,25 @@ test('editor can create content and sees validation errors', async ({ page }) =>
   await expect(page.getByRole('heading', { level: 1, name: 'تعديل مادة' })).toBeVisible()
 })
 
+test('the book form has a download checkbox that is off by default and keeps its value', async ({ page }) => {
+  test.skip(usesRealBackend, 'demo-only flow')
+  await signInDemo(page, '/admin/content/new')
+  await expect(page.getByRole('heading', { level: 1, name: 'مادة جديدة' })).toBeVisible()
+  // Only books have the option.
+  await expect(page.getByLabel('السماح بتنزيل الكتاب')).toHaveCount(0)
+  await page.getByLabel('نوع المادة').selectOption('book')
+  const download = page.getByLabel('السماح بتنزيل الكتاب')
+  await expect(download).not.toBeChecked()
+
+  await page.getByLabel('العنوان', { exact: true }).fill('كتاب اختبار التنزيل')
+  await page.getByLabel('المؤلف', { exact: true }).fill('مؤلف الاختبار')
+  await download.check()
+  await page.getByRole('button', { name: 'حفظ المادة' }).click()
+  await expect(page.getByText('تمت إضافة المادة.')).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'تعديل مادة' })).toBeVisible()
+  await expect(page.getByLabel('السماح بتنزيل الكتاب')).toBeChecked()
+})
+
 test('content list filters by type and the mobile menu navigates', async ({ page }, testInfo) => {
   test.skip(usesRealBackend, 'demo-only flow')
   await signInDemo(page, '/admin/content')

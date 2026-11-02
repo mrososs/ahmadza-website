@@ -72,3 +72,5 @@ export async function expectNoRowsAffected(response: import('@playwright/test').
   const body: unknown = await response.json().catch(() => [])
   return Array.isArray(body) && body.length === 0
 }
+
+export const serviceHeaders = secretHeaders
