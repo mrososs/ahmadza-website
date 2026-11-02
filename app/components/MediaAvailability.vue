@@ -27,20 +27,17 @@ const isReading = shallowRef(false)
       <div>
         <h2>نسخة الكتاب</h2>
         <p v-if="item.pageCount">{{ item.pageCount }} صفحة</p>
+        <p v-if="item.pdfUrl">متاح للقراءة على الموقع فقط.</p>
       </div>
       <template v-if="item.pdfUrl">
         <div class="media-availability__actions">
           <button type="button" class="button-primary" :aria-expanded="isReading" aria-controls="book-reader" @click="isReading = !isReading">
             {{ isReading ? 'إخفاء الكتاب' : 'قراءة الكتاب' }}
           </button>
-          <a class="button-primary" :href="item.pdfUrl" target="_blank" rel="noopener">فتح في تبويب جديد</a>
-          <a v-if="item.downloadAllowed" class="button-primary" :href="item.pdfUrl" download>تنزيل PDF</a>
         </div>
-        <div v-if="isReading" id="book-reader" class="book-reader">
-          <iframe :src="item.pdfUrl" :title="`قراءة كتاب ${item.title}`" loading="lazy" />
-        </div>
+        <BookReader v-if="isReading" id="book-reader" :src="item.pdfUrl" :title="item.title" />
       </template>
-      <p v-else class="media-availability__empty">{{ isDemo ? "لا يتوفر ملف PDF موثوق لهذا النموذج، لذلك لم نعرض زر تنزيل." : "لا يتوفر ملف PDF لهذه المادة حاليًا." }}</p>
+      <p v-else class="media-availability__empty">{{ isDemo ? "لا يتوفر ملف PDF موثوق لهذا النموذج، لذلك لم نعرض قارئًا." : "لا يتوفر ملف PDF لهذه المادة حاليًا." }}</p>
     </template>
 
     <template v-else>

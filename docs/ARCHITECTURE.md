@@ -52,6 +52,12 @@ The API returns `source: "demo" | "supabase"` so developer and UI diagnostics ne
 - Search remains server-rendered and URL-driven (`q` and `type`) so results are linkable.
 - Media is lazy-loaded below the fold, and unavailable media produces an honest static state.
 
+## Book reader
+
+Books are read on the site only. `BookReader` + `usePdfReader` draw one PDF page at a time onto a canvas with pdf.js, so the browser's own PDF viewer (with its download and print buttons) is never used, and the page has no download or open-in-new-tab link. The reader is client-only and lazy: pdf.js loads when a visitor presses "قراءة الكتاب". Its decoders, CMaps and fonts are served from `node_modules` under `/_pdfjs/<version>/` (`nitro.publicAssets` in `nuxt.config.ts`).
+
+This removes every download affordance but is not DRM. The PDF is still a public Supabase Storage object that the browser fetches, so a determined visitor can recover it from the network log. The reader also blocks right-click save, drag, text selection and printing, which are deterrents only. Real protection would need a private bucket with short-lived signed URLs, or server-rendered page images.
+
 ## Security
 
 - Public APIs expose only published content.

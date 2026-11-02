@@ -240,8 +240,29 @@ img, svg, video, iframe { display: block; max-width: 100%; }
 .media-availability audio { margin-block-start: .7rem; }
 .media-availability__empty { padding-block-start: 1rem; border-block-start: 1px solid rgb(255 255 255 / 18%); }
 .media-availability__actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .7rem; }
-.book-reader { grid-column: 1 / -1; block-size: min(80vh, 60rem); min-block-size: 24rem; background: white; }
-.book-reader iframe { inline-size: 100%; block-size: 100%; border: 0; }
+.book-reader { grid-column: 1 / -1; display: grid; gap: .7rem; min-inline-size: 0; }
+.book-reader__toolbar, .book-reader__group { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
+.book-reader__toolbar { gap: .6rem 1.2rem; }
+.book-reader__toolbar button, .book-reader__toolbar input { min-block-size: 44px; min-inline-size: 44px; border: 1px solid rgb(255 255 255 / 45%); font: inherit; }
+.book-reader__toolbar button { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; padding-inline: .9rem; background: transparent; color: white; cursor: pointer; }
+.book-reader__toolbar button:hover:not(:disabled) { background: rgb(255 255 255 / 14%); }
+.book-reader__toolbar button:disabled { opacity: .45; cursor: not-allowed; }
+.book-reader__toolbar input { inline-size: 4.5rem; padding-inline: .4rem; background: white; color: var(--ink); text-align: center; }
+.book-reader__toolbar label, .book-reader__group span { color: #bed0c7; font-size: .82rem; }
+/* The global forest outline is invisible on the forest media panel. */
+.book-reader :focus-visible { outline-color: #dfc78f; }
+.book-reader__stage { block-size: min(80vh, 60rem); min-block-size: 24rem; overflow: auto; scrollbar-gutter: stable; background: var(--paper); color: var(--ink); -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+/* A canvas draws text with the direction it inherits. pdf.js positions every glyph itself, so inside this RTL site it must be forced to ltr or Arabic runs are mirrored and scatter. */
+.book-reader__stage canvas { display: block; direction: ltr; margin-inline: auto; background: white; -webkit-user-drag: none; }
+.book-reader__state { padding: 2rem; font-size: .95rem; }
+/* On narrow screens previous/next shrink to icons (the text stays for assistive tech) so the page box fits on one row. */
+@media (max-width: 30rem) {
+  .book-reader__toolbar { column-gap: .6rem; }
+  .book-reader__toolbar input { inline-size: 3.5rem; }
+  .book-reader__label { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+/* The reader is for reading on the site; keep the book out of printouts too. */
+@media print { .book-reader { display: none; } }
 .video-embed { grid-column: 1 / -1; aspect-ratio: 16 / 9; }
 .video-embed iframe { width: 100%; height: 100%; border: 0; }
 .related-content { padding-block: 5rem; background: var(--paper-raised); border-block-start: 1px solid var(--rule); }

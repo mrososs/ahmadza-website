@@ -1,4 +1,16 @@
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
+
+// The book reader (usePdfReader) needs pdf.js decoders, CMaps and fonts as plain files. They are served straight from the
+// installed package under a versioned path, so an upgrade can never leave browsers with a stale decoder.
+const pdfjsRoot = fileURLToPath(new URL('./node_modules/pdfjs-dist/', import.meta.url))
+const pdfjsVersion = (JSON.parse(readFileSync(`${pdfjsRoot}package.json`, 'utf8')) as { version: string }).version
+const pdfjsAssets = ['cmaps', 'standard_fonts', 'wasm', 'iccs'].map(folder => ({
+  dir: `${pdfjsRoot}${folder}`,
+  baseURL: `/_pdfjs/${pdfjsVersion}/${folder}`,
+  maxAge: 60 * 60 * 24 * 365,
+}))
 
 export default defineNuxtConfig({
   compatibilityDate: '2026-10-31',
@@ -53,6 +65,7 @@ export default defineNuxtConfig({
     '/about': { prerender: true },
   },
   nitro: {
+    publicAssets: pdfjsAssets,
     // No crawlLinks: crawling /about's navigation froze every content list (and any item that existed at build
     // time) into static HTML, so books published later never appeared. Only truly static routes are prerendered.
     prerender: { crawlLinks: false, routes: ['/robots.txt'] },

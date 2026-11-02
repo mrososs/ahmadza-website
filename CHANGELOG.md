@@ -11,6 +11,11 @@ All notable changes to this project are documented in this file. The format foll
 - Additive Supabase schema, storage buckets, indexes, and row-level security policies.
 - SEO metadata, sitemap, robots rules, accessible states, responsive layouts, and Playwright coverage.
 - Contemporary Accession Folio design system with self-hosted Arabic fonts.
+- In-page book reader (pdf.js canvas) with page navigation, page jump, zoom and RTL arrow keys.
+
+### Changed
+
+- Books are read on the site only: the browser's PDF viewer, the "open in new tab" link, the "download PDF" button and the admin "allow download" option are removed.
 
 ### Security
 

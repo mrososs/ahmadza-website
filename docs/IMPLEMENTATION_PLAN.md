@@ -20,7 +20,7 @@ Build a production-ready Arabic digital knowledge library in Nuxt 4, with comple
 ### REQ-003 — Honest media behavior (must)
 
 - Audio uses native browser-compatible controls only when a valid source exists.
-- Books expose preview/download only when a valid PDF source exists.
+- Books expose an in-page reader (no download) only when a valid PDF source exists.
 - Videos embed only a recognized valid YouTube identifier.
 - Missing media renders an explicit unavailable/demo state.
 
