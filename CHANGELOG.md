@@ -16,7 +16,8 @@ All notable changes to this project are documented in this file. The format foll
 
 ### Changed
 
-- Books are read on the site only: the browser's PDF viewer, the "open in new tab" link, the "download PDF" button and the admin "allow download" option are removed.
+- Books are read on the site by default: the browser's PDF viewer and the "open in new tab" link are removed.
+- Downloading is an opt-in per book: the admin book form has "السماح بتنزيل الكتاب" (off by default); when it is on, the book page shows a "تنزيل PDF" button next to the reader.
 
 ### Security
 
