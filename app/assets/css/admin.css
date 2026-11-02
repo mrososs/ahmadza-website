@@ -213,3 +213,13 @@ a.admin-button { text-decoration: none; }
 .branding-helper--hint { padding-inline-start: .75rem; border-inline-start: 3px solid var(--admin-orange); }
 .branding-warnings { list-style: none; margin: 0; padding: 0; }
 .branding-slot .admin-alert { margin-block-end: .75rem; }
+
+/* Sidebar scrollbar: quiet on the dark chrome, brightens to the brand orange on hover. */
+.admin-nav { scrollbar-width: thin; scrollbar-color: rgb(255 255 255 / 28%) transparent; }
+.admin-nav:hover { scrollbar-color: var(--admin-orange) transparent; }
+@supports not (scrollbar-color: auto) {
+  .admin-nav::-webkit-scrollbar { inline-size: 8px; }
+  .admin-nav::-webkit-scrollbar-track { background: transparent; }
+  .admin-nav::-webkit-scrollbar-thumb { background: rgb(255 255 255 / 28%); border-radius: 999px; }
+  .admin-nav::-webkit-scrollbar-thumb:hover { background: var(--admin-orange); }
+}

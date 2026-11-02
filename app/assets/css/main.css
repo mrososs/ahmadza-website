@@ -853,3 +853,11 @@ img.category-card__art { width: 100px; height: 150px; }
 @media (max-width: 600px) { .youtube-band__grid > li { flex-basis: 100%; } .video-grid { grid-template-columns: 1fr; }}
 .book-cover { display: block; inline-size: 200px; max-inline-size: 100%; aspect-ratio: 2 / 3; object-fit: cover; margin-block-end: 1.5rem; border: 1px solid var(--rule); border-radius: 6px; }
 .library-masthead__name :is(h1, .library-masthead__heading) img { max-height: 100%; object-fit: contain; }
+
+/* Page scrollbar: slim orange thumb on the library wash; the standard properties win where supported, the -webkit rules cover older engines. */
+html { scrollbar-width: thin; scrollbar-color: var(--library-orange) var(--library-wash); }
+@supports not (scrollbar-color: auto) {
+  html::-webkit-scrollbar { inline-size: 12px; }
+  html::-webkit-scrollbar-track { background: var(--library-wash); }
+  html::-webkit-scrollbar-thumb { background: var(--library-orange); border: 3px solid var(--library-wash); border-radius: 999px; }
+}
