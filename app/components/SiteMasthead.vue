@@ -3,6 +3,7 @@ import type { ContentItem } from '~/types/content'
 
 const { home = false } = defineProps<{ home?: boolean; items: ContentItem[] }>()
 const authorDisplayName = useRuntimeConfig().public.authorDisplayName
+const { image, bind, onError } = useBrandingImage('heroImage')
 </script>
 
 <template>
@@ -12,7 +13,7 @@ const authorDisplayName = useRuntimeConfig().public.authorDisplayName
       <div class="site-container library-masthead__inner">
         <div class="library-masthead__name">
           <component :is="home ? 'h1' : 'div'" :class="{ 'library-masthead__heading': !home }">
-            <img src="/ornaments/ahmad-zayed-logo-client.png" :alt="authorDisplayName" width="1448" height="1086" fetchpriority="high">
+            <img :ref="bind" :src="image.url" :alt="image.alt || authorDisplayName" :width="image.width" :height="image.height" fetchpriority="high" @error="onError">
           </component>
         </div>
       </div>

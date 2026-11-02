@@ -1,6 +1,8 @@
 <script setup lang="ts">
 const route = useRoute()
-const { data } = await useLibraryContent()
+// Both requests start together; the branding result is then shared by the header, footer and hero.
+const libraryRequest = useLibraryContent()
+const [{ data }] = await Promise.all([libraryRequest, useSiteBranding().ready])
 const items = computed(() => data.value?.items ?? [])
 const latest = computed(() => items.value.slice(0, 5))
 const videos = computed(() => items.value.filter(item => item.type === 'video').slice(0, 4))

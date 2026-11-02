@@ -1,6 +1,9 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { ContentRepository } from '~/repositories/content-repository'
+import type { SiteBrandingResult } from '~/types/branding'
 import type { ContentDetailResult, ContentItem, ContentListResult, ContentQuery, ContentType } from '~/types/content'
+import { brandingSettingKeys, brandingStorageBase } from '~/utils/branding'
+import { parseBrandingRows } from '~/utils/branding-rows'
 
 interface ContentRow {
   id: string
@@ -78,7 +81,7 @@ function mapRow(row: ContentRow): ContentItem {
 export class SupabaseContentRepository implements ContentRepository {
   private readonly client: SupabaseClient
 
-  constructor(url: string, publishableKey: string) {
+  constructor(private readonly url: string, publishableKey: string) {
     this.client = createClient(url, publishableKey, { auth: { persistSession: false, autoRefreshToken: false } })
   }
 
@@ -120,5 +123,12 @@ export class SupabaseContentRepository implements ContentRepository {
     const item = mapRow(data as unknown as ContentRow)
     const relatedResult = await this.list({ type, limit: 4 })
     return { item, related: relatedResult.items.filter(entry => entry.id !== item.id).slice(0, 3), source: 'supabase' }
+  }
+
+  async getBranding(): Promise<SiteBrandingResult> {
+    // Anonymous read: the "Public settings are readable" policy exposes only rows marked public_readable.
+    const { data, error } = await this.client.from('site_settings').select('key, value').in('key', [...brandingSettingKeys])
+    if (error) throw new Error(`Supabase branding failed: ${error.message}`)
+    return { branding: parseBrandingRows(data, brandingStorageBase(this.url)), source: 'supabase' }
   }
 }

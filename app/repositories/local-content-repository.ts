@@ -1,6 +1,8 @@
 import { demoContent } from '~/data/demo-content'
 import type { ContentRepository } from '~/repositories/content-repository'
+import type { SiteBrandingResult } from '~/types/branding'
 import type { ContentDetailResult, ContentItem, ContentListResult, ContentQuery, ContentType } from '~/types/content'
+import { defaultSiteBranding } from '~/utils/branding'
 
 const normalize = (value: string) => value.trim().toLocaleLowerCase('ar').replace(/[\u064B-\u065F\u0670]/g, '')
 
@@ -43,5 +45,9 @@ export class LocalContentRepository implements ContentRepository {
       .slice(0, 3)
 
     return { item, related, source: 'demo' }
+  }
+
+  async getBranding(): Promise<SiteBrandingResult> {
+    return { branding: defaultSiteBranding(), source: 'demo' }
   }
 }
