@@ -11,6 +11,7 @@ An Arabic RTL content console deployed with the public site. It is client-render
 | `/admin/content` | Filterable list (type, status, title search in the URL), delete with confirmation. |
 | `/admin/content/new`, `/admin/content/:id` | Editor: basics, type-specific fields, body sections, publishing, categories, SEO. |
 | `/admin/categories` | Create and edit categories. |
+| `/admin/branding` | Owner only. Replace the header logo and the hero image, with preview, validation and reset (see "Site branding"). |
 
 ## Configuration
 
@@ -63,6 +64,26 @@ Required Supabase dashboard settings (Authentication → URL Configuration), whi
 
 `SMOKE_URL=https://… npx playwright test -c playwright.smoke.config.ts` runs read-only checks (public pages, empty states, admin protection, bad-credential rejection, recovery pages). Optional `SMOKE_SUPABASE_URL`/`SMOKE_SUPABASE_KEY` add anonymous-write checks; `SMOKE_ADMIN_EMAIL`/`SMOKE_ADMIN_PASSWORD` add a sign-in/sign-out check. Nothing is created or deleted.
 
+## Site branding (`/admin/branding`)
+
+The owner can replace two images without touching code or redeploying:
+
+| Image | Used by | Recommended | Bundled fallback |
+| --- | --- | --- | --- |
+| شعار الموقع (header logo) | `BrandMark` in the header and footer, and the admin top bar | 800 × 600 px (4:3) | `/ornaments/ahmad-zayed-hero-client.png` |
+| صورة الواجهة الرئيسية (hero) | `SiteMasthead` | 1600 × 1200 px (4:3) | `/ornaments/ahmad-zayed-logo-client.png` |
+
+The bundled file names are the reverse of what they show; the table above is authoritative.
+
+- **Validation (browser):** PNG or WebP only, 5 MB maximum, readable as an image, at least 400 × 300 (logo) / 800 × 600 (hero) and at most 6000 px per side. Warnings, which never block saving: ratio far from 4:3, below the recommended size, no transparent background, artwork touching the image border. The site never crops: both images are shown with `object-fit: contain`.
+- **Storage:** public bucket `site-branding` (5 MB and PNG/WebP enforced by Storage). Every upload gets a new `header-logo/<uuid>.<ext>` or `hero-image/<uuid>.<ext>` path, so a file is never overwritten and every URL is cache-safe. No SVG.
+- **Setting rows:** `site_settings` keys `branding.header_logo` and `branding.hero_image` (`public_readable = true`), value `{ url, storagePath, alt, width, height, updatedAt }`. A check constraint requires the URL to point at that exact storage path. No row means the bundled image.
+- **Authorization:** only an active `owner` can insert/update/delete these two keys and upload/delete files in the bucket (`is_active_owner()` in RLS). Editors can read settings but not change them, and do not see the menu entry.
+- **Save is safe:** the file is uploaded first and the setting is changed second. If the setting cannot be saved the new file is removed and the current image stays live. Replaced files are kept (so a page cached elsewhere never shows a broken image); only the owner-only delete policy can remove them.
+- **Reset:** "استعادة الصورة الافتراضية" deletes the setting row after a confirmation. The uploaded file stays in storage.
+- **Public site:** `GET /api/branding` (`no-store`) reads the rows through `ContentRepository.getBranding()`; `useSiteBranding()` shares that one result between the header, footer and hero through the SSR payload. If the request fails, or a row is invalid, the bundled image is served and the reason is logged. Prerendered pages (`/about`) revalidate the branding once after hydration.
+- **Local end-to-end test:** `npm run test:e2e:branding` needs a local Supabase stack (`supabase start`) and refuses non-local URLs; see `playwright.branding.config.ts`.
+
 ## Publishing semantics
 
 - `published` rows become public when `published_at <= now()`. Leaving the date empty publishes immediately; a future date keeps the item hidden until then (no cron needed).
@@ -72,6 +93,7 @@ Required Supabase dashboard settings (Authentication → URL Configuration), whi
 
 ## Known gaps / next steps
 
-- Site settings screen: the `site_settings` table exists, but there is no UI and the public site does not read it yet.
+- Site settings other than branding: `site_settings` only accepts the two branding keys (owner-only); other settings need their own policy.
+- Replaced or reset branding files are never deleted by the app; prune them from the `site-branding` bucket if storage matters.
 - Rich text beyond paragraphs, headings and a pull quote.
 - Role-based UI (owners vs editors) and an admin-users screen.
