@@ -62,8 +62,8 @@ test('content list filters by type and the mobile menu navigates', async ({ page
   if (testInfo.project.name.includes('mobile')) {
     await page.getByRole('button', { name: 'فتح القائمة' }).click()
   }
-  await page.getByRole('navigation', { name: 'إدارة الموقع' }).getByRole('link', { name: 'التصنيفات' }).click()
-  await expect(page.getByRole('heading', { level: 1, name: 'التصنيفات' })).toBeVisible()
+  await page.getByRole('navigation', { name: 'إدارة الموقع' }).getByRole('link', { name: 'هوية الموقع' }).click()
+  await expect(page.getByRole('heading', { level: 1, name: 'هوية الموقع' })).toBeVisible()
 })
 
 test('password recovery pages are reachable without a session and fail safely', async ({ page }) => {
