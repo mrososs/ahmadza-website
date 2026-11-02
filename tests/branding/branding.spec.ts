@@ -8,8 +8,8 @@ test.describe.configure({ mode: 'serial' })
 
 const shots = 'artifacts/branding'
 const viewports = [{ name: '1440', width: 1440, height: 1000 }, { name: '768', width: 768, height: 1000 }, { name: '390', width: 390, height: 844 }]
-const bundledLogo = '/ornaments/ahmad-zayed-hero-client.png'
-const bundledHero = '/ornaments/ahmad-zayed-logo-client.png'
+const bundledLogo = '/branding/header-logo-ahmad-alzahrani.webp'
+const bundledHero = '/branding/hero-ahmad-alzahrani.webp'
 const logoFolder = '/storage/v1/object/public/site-branding/header-logo/'
 const heroFolder = '/storage/v1/object/public/site-branding/hero-image/'
 
@@ -60,11 +60,11 @@ test('owner sees the current images and the guidance on /admin/branding', async 
 
   const logo = slot(page, 'headerLogo')
   await expect(logo.getByRole('heading', { level: 2, name: 'شعار الموقع' })).toBeVisible()
-  await expect(logo.getByTestId('branding-helper')).toHaveText('المقاس الموصى به: 800 × 600 بكسل (نسبة 4:3). الصيغ المدعومة: PNG أو WebP. يُفضّل استخدام خلفية شفافة. الحد الأقصى: 5 ميجابايت.')
+  await expect(logo.getByTestId('branding-helper')).toHaveText('المقاس الموصى به: 1200 × 500 بكسل (نسبة 12:5، عريضة قليلًا). الصيغ المدعومة: PNG أو WebP. يُفضّل استخدام خلفية شفافة. الحد الأقصى: 5 ميجابايت.')
   await expect(logo.getByTestId('branding-current').getByRole('img')).toHaveAttribute('src', bundledLogo)
   const hero = slot(page, 'heroImage')
   await expect(hero.getByRole('heading', { level: 2, name: 'صورة الواجهة الرئيسية' })).toBeVisible()
-  await expect(hero.getByTestId('branding-helper')).toHaveText('المقاس الموصى به: 1600 × 1200 بكسل (نسبة 4:3). الصيغ المدعومة: PNG أو WebP. يُفضّل استخدام خلفية شفافة. الحد الأقصى: 5 ميجابايت.')
+  await expect(hero.getByTestId('branding-helper')).toHaveText('المقاس الموصى به: 1600 × 900 بكسل (نسبة 16:9). الصيغ المدعومة: PNG أو WebP. يُفضّل استخدام خلفية شفافة. الحد الأقصى: 5 ميجابايت.')
   await expect(hero.getByTestId('branding-current').getByRole('img')).toHaveAttribute('src', bundledHero)
   await page.screenshot({ path: `${shots}/before-admin-1440.png`, fullPage: true })
 })
@@ -186,7 +186,7 @@ test('a wide hero is letterboxed, never cropped or stretched, and the sticky hea
   await signIn(page, owner)
   const hero = slot(page, 'heroImage')
   await hero.locator('input[type="file"]').setInputFiles({ name: 'wide.png', mimeType: 'image/png', buffer: makePng(1800, 700) })
-  await expect(hero.getByRole('list', { name: 'تنبيهات على الصورة الجديدة' })).toContainText('نسبة الصورة تختلف عن 4:3')
+  await expect(hero.getByRole('list', { name: 'تنبيهات على الصورة الجديدة' })).toContainText('نسبة الصورة تختلف عن 16:9')
   await hero.getByRole('button', { name: 'حفظ التغييرات' }).click()
   await expect(hero.getByRole('status').filter({ hasText: 'تم حفظ' })).toBeVisible()
 

@@ -16,6 +16,10 @@ All notable changes to this project are documented in this file. The format foll
 
 ### Changed
 
+- The «عن الموقع» (About) page is removed, with its header and footer links, sitemap entry and prerender rule; the footer copyright line is centered.
+- The bundled header logo and hero image (both warm-white, single-colour versions of the new artwork, like the previous logo) are now the client's «أحمد الزهراني» artwork (`/branding/*.webp`); the wrong name «أحمد زايد» is corrected to «أحمد الزهراني». `/admin/branding` has per-slot ratios and sizes (logo 12:5, 1200 × 500; hero 16:9, 1600 × 900). Saved owner images are untouched.
+- Homepage: the «المكتبة الرقمية» heading and intro line, «اخترنا لكم», «أحدث المواضيع في أقسام المكتبة» and the header «أقسام المكتبة» dropdown are removed; the area around «أحدث المنشورات» is sits on one continuous Islamic pattern (13% opacity) with a large floral medallion half off each side, shared by all pages; the sections below the hero fade in as they scroll into view.
+
 - Books are read on the site by default: the browser's PDF viewer and the "open in new tab" link are removed.
 - Downloading is an opt-in per book: the admin book form has "السماح بتنزيل الكتاب" (off by default); when it is on, the book page shows a "تنزيل PDF" button next to the reader.
 

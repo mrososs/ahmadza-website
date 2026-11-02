@@ -51,9 +51,9 @@ useSeoMeta({ robots: 'noindex, nofollow' })
     <a class="skip-link" href="#admin-main">انتقل إلى المحتوى</a>
 
     <header class="admin-topbar">
-      <NuxtLink to="/admin" class="admin-brand" aria-label="لوحة تحكم موقع أحمد زايد">
+      <NuxtLink to="/admin" class="admin-brand" aria-label="لوحة تحكم موقع أحمد الزهراني">
         <img :ref="bindLogo" :src="logo.url" alt="" :width="logo.width" :height="logo.height" @error="onLogoError">
-        <span><strong>لوحة التحكم</strong><small>موقع أحمد زايد</small></span>
+        <span><strong>لوحة التحكم</strong><small>موقع أحمد الزهراني</small></span>
       </NuxtLink>
       <button class="admin-menu-button" type="button" :aria-expanded="isOpen" aria-controls="admin-nav" :aria-label="isOpen ? 'إغلاق القائمة' : 'فتح القائمة'" @click="isOpen = !isOpen">
         <X v-if="isOpen" :size="24" aria-hidden="true" />

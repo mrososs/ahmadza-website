@@ -11,7 +11,7 @@ const artwork = computed(() => headerLogo
   <NuxtLink to="/" class="brand-mark" aria-label="الصفحة الرئيسية">
     <img :ref="bind" class="brand-mark__artwork" :src="artwork.src" :alt="artwork.alt" :width="artwork.width" :height="artwork.height" @error="onError">
     <span v-if="!compact" class="brand-mark__copy">
-      <strong>مكتبة أحمد زايد</strong>
+      <strong>مكتبة أحمد الزهراني</strong>
       <small>معرفةٌ تُقرأ على مهل</small>
     </span>
   </NuxtLink>

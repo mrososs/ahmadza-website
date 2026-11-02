@@ -3,8 +3,8 @@ import { KeyRound } from '@lucide/vue'
 import '~/assets/css/admin.css'
 
 definePageMeta({ layout: false, middleware: 'admin' })
-useHead({ title: 'تعيين كلمة مرور جديدة | موقع أحمد زايد', htmlAttrs: { lang: 'ar', dir: 'rtl' } })
-useSeoMeta({ robots: 'noindex, nofollow', description: 'تعيين كلمة مرور جديدة لمدير موقع أحمد زايد.' })
+useHead({ title: 'تعيين كلمة مرور جديدة | موقع أحمد الزهراني', htmlAttrs: { lang: 'ar', dir: 'rtl' } })
+useSeoMeta({ robots: 'noindex, nofollow', description: 'تعيين كلمة مرور جديدة لمدير موقع أحمد الزهراني.' })
 
 const MIN_LENGTH = 12
 const route = useRoute()
@@ -68,7 +68,7 @@ async function submit() {
 <template>
   <div class="login-page">
     <main class="login-card">
-      <img class="login-card__logo" src="/ornaments/ahmad-zayed-logo-client.png" alt="موقع أحمد زايد" width="1448" height="1086">
+      <img class="login-card__logo" src="/branding/hero-ahmad-alzahrani.webp" alt="موقع أحمد الزهراني" width="1400" height="788">
       <section class="login-card__body" aria-labelledby="reset-title">
         <h1 id="reset-title" class="admin-title">كلمة مرور جديدة</h1>
 

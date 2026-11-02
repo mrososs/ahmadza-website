@@ -3,8 +3,8 @@ import { Mail } from '@lucide/vue'
 import '~/assets/css/admin.css'
 
 definePageMeta({ layout: false, middleware: 'admin' })
-useHead({ title: 'استعادة كلمة المرور | موقع أحمد زايد', htmlAttrs: { lang: 'ar', dir: 'rtl' } })
-useSeoMeta({ robots: 'noindex, nofollow', description: 'استعادة كلمة مرور مدير موقع أحمد زايد.' })
+useHead({ title: 'استعادة كلمة المرور | موقع أحمد الزهراني', htmlAttrs: { lang: 'ar', dir: 'rtl' } })
+useSeoMeta({ robots: 'noindex, nofollow', description: 'استعادة كلمة مرور مدير موقع أحمد الزهراني.' })
 
 const { requestPasswordReset } = useAdminSession()
 const email = shallowRef('')
@@ -36,7 +36,7 @@ async function submit() {
 <template>
   <div class="login-page">
     <main class="login-card">
-      <img class="login-card__logo" src="/ornaments/ahmad-zayed-logo-client.png" alt="موقع أحمد زايد" width="1448" height="1086">
+      <img class="login-card__logo" src="/branding/hero-ahmad-alzahrani.webp" alt="موقع أحمد الزهراني" width="1400" height="788">
       <section class="login-card__body" aria-labelledby="forgot-title">
         <h1 id="forgot-title" class="admin-title">استعادة كلمة المرور</h1>
         <p class="admin-muted">أدخل بريد المدير وسنرسل رابطًا لتعيين كلمة مرور جديدة.</p>

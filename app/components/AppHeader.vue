@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChevronDown, Menu, Search, X } from '@lucide/vue'
+import { Menu, Search, X } from '@lucide/vue'
 
 const route = useRoute()
 const isOpen = shallowRef(false)
@@ -11,12 +11,6 @@ const links = [
   { to: '/books', label: 'الكتب' },
   { to: '/benefits', label: 'الفوائد' },
   { to: '/videos', label: 'المرئيات' },
-  { to: '/about', label: 'عن الموقع' },
-]
-
-const libraryGroups = [
-  { label: 'المكتوب', links: [{ to: '/articles', label: 'المقالات' }, { to: '/books', label: 'الكتب' }, { to: '/benefits', label: 'الفوائد' }] },
-  { label: 'المسموع والمرئي', links: [{ to: '/sermons', label: 'الخطب' }, { to: '/audio', label: 'الصوتيات' }, { to: '/videos', label: 'المرئيات' }] },
 ]
 
 watch(() => route.fullPath, () => { isOpen.value = false })
@@ -38,15 +32,6 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
       <nav class="desktop-nav" aria-label="التنقل الرئيسي">
         <NuxtLink to="/" active-class="" exact-active-class="router-link-active">الرئيسية</NuxtLink>
         <NuxtLink v-for="link in links" :key="link.to" :to="link.to">{{ link.label }}</NuxtLink>
-        <details class="nav-menu">
-          <summary>أقسام المكتبة <ChevronDown :size="14" aria-hidden="true" /></summary>
-          <div class="nav-menu__panel">
-            <div v-for="group in libraryGroups" :key="group.label">
-              <strong>{{ group.label }}</strong>
-              <NuxtLink v-for="link in group.links" :key="link.to" :to="link.to">{{ link.label }}</NuxtLink>
-            </div>
-          </div>
-        </details>
       </nav>
       <form class="header-search" role="search" action="/search" method="get">
         <input name="q" type="search" aria-label="كلمة البحث" placeholder="اكتب كلمة البحث">

@@ -3,8 +3,8 @@ import { LogIn } from '@lucide/vue'
 import '~/assets/css/admin.css'
 
 definePageMeta({ layout: false, middleware: 'admin' })
-useHead({ title: 'تسجيل دخول المدير | موقع أحمد زايد', htmlAttrs: { lang: 'ar', dir: 'rtl' } })
-useSeoMeta({ robots: 'noindex, nofollow', description: 'تسجيل دخول مديري موقع أحمد زايد.' })
+useHead({ title: 'تسجيل دخول المدير | موقع أحمد الزهراني', htmlAttrs: { lang: 'ar', dir: 'rtl' } })
+useSeoMeta({ robots: 'noindex, nofollow', description: 'تسجيل دخول مديري موقع أحمد الزهراني.' })
 
 const route = useRoute()
 const { signIn, mode, restore } = useAdminSession()
@@ -47,7 +47,7 @@ async function submit() {
   <div class="login-page">
     <a class="skip-link" href="#login-form">انتقل إلى النموذج</a>
     <main class="login-card">
-      <img class="login-card__logo" src="/ornaments/ahmad-zayed-logo-client.png" alt="موقع أحمد زايد" width="1448" height="1086">
+      <img class="login-card__logo" src="/branding/hero-ahmad-alzahrani.webp" alt="موقع أحمد الزهراني" width="1400" height="788">
       <section class="login-card__body" aria-labelledby="login-title">
         <h1 id="login-title" class="admin-title">تسجيل دخول المدير</h1>
         <p class="admin-muted">هذه الصفحة مخصّصة لإدارة محتوى الموقع.</p>

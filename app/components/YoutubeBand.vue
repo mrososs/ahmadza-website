@@ -6,7 +6,7 @@ const isDemo = useIsDemoContent()
 </script>
 
 <template>
-  <section v-if="videos.length" class="youtube-band" aria-labelledby="youtube-title">
+  <section v-if="videos.length" class="youtube-band" aria-labelledby="youtube-title" data-reveal>
     <div class="ref-container">
       <h2 id="youtube-title">أحدث فيديوهات قناة اليوتيوب</h2>
       <ul class="youtube-band__grid">

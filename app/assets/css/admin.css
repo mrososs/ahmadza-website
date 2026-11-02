@@ -25,7 +25,7 @@
 .admin-shell { min-height: 100vh; background: var(--admin-wash); display: grid; grid-template-columns: 1fr; grid-template-rows: auto auto 1fr; }
 .admin-topbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .5rem 1rem; background: var(--admin-chrome); color: #f8f3e8; }
 .admin-brand { display: inline-flex; align-items: center; gap: .75rem; color: inherit; text-decoration: none; }
-.admin-brand img { width: 64px; height: auto; }
+.admin-brand img { width: auto; height: 44px; object-fit: contain; }
 .admin-brand span { display: grid; line-height: 1.3; }
 .admin-brand strong { font-size: 1.15rem; font-weight: 400; }
 .admin-brand small { color: #d6cbb7; font-size: .8rem; }
@@ -204,10 +204,10 @@ a.admin-button { text-decoration: none; }
 .branding-figure__meta { margin: 0; color: #5f5f5f; font-size: .85rem; }
 .branding-figure--empty { align-content: center; border-style: dashed; text-align: center; }
 .branding-stage { position: relative; isolation: isolate; display: grid; place-items: center; overflow: hidden; border-radius: 6px; background: var(--admin-stage); }
-.branding-stage--headerLogo { min-block-size: 132px; padding: 1rem; }
-.branding-stage--headerLogo img { inline-size: 145px; block-size: 112px; object-fit: contain; }
-.branding-stage--heroImage { aspect-ratio: 14 / 11; padding: 4%; }
-.branding-stage--heroImage::before { content: ''; position: absolute; z-index: -1; inset: 0; background: url('/ornaments/floral-medallion.png') center / 70% no-repeat; opacity: .12; filter: grayscale(1) sepia(1); }
+/* Header: the logo on the dark header ground. Hero: 16:9 stage, the artwork at most 500px wide as on the live site. */
+.branding-stage--headerLogo { min-block-size: 84px; padding: .75rem; }
+.branding-stage--headerLogo img { inline-size: auto; max-inline-size: 100%; block-size: 58px; object-fit: contain; }
+.branding-stage--heroImage { aspect-ratio: 16 / 9; padding: 4%; }
 .branding-stage--heroImage img { inline-size: 100%; block-size: 100%; object-fit: contain; }
 .branding-helper { max-inline-size: 60ch; margin: 0 0 .75rem; white-space: pre-line; color: #4a4a4a; }
 .branding-helper--hint { padding-inline-start: .75rem; border-inline-start: 3px solid var(--admin-orange); }

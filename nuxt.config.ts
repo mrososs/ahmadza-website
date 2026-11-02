@@ -49,24 +49,23 @@ export default defineNuxtConfig({
       supabaseUrl: '',
       supabasePublishableKey: '',
       siteUrl: 'https://prof-ahmadza.com',
-      siteName: 'مكتبة أحمد زايد الرقمية',
-      authorDisplayName: 'أحمد زايد',
+      siteName: 'مكتبة أحمد الزهراني الرقمية',
+      authorDisplayName: 'أحمد الزهراني',
     },
   },
   site: {
     url: process.env.NUXT_PUBLIC_SITE_URL || 'https://prof-ahmadza.com',
-    name: 'مكتبة أحمد زايد الرقمية',
+    name: 'مكتبة أحمد الزهراني الرقمية',
   },
   sitemap: { sources: ['/api/__sitemap__/urls'], exclude: ['/admin', '/admin/**'] },
   routeRules: {
     '/admin/**': { ssr: false, headers: { 'x-robots-tag': 'noindex, nofollow' } },
     // Content pages are rendered per request on purpose: stale-while-revalidate kept serving an empty list
     // after an editor published, and editors expect to see their change as soon as they open the site.
-    '/about': { prerender: true },
   },
   nitro: {
     publicAssets: pdfjsAssets,
-    // No crawlLinks: crawling /about's navigation froze every content list (and any item that existed at build
+    // No crawlLinks: crawling the site navigation froze every content list (and any item that existed at build
     // time) into static HTML, so books published later never appeared. Only truly static routes are prerendered.
     prerender: { crawlLinks: false, routes: ['/robots.txt'] },
   },

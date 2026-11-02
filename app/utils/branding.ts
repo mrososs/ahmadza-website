@@ -13,6 +13,8 @@ interface BrandingSpec {
   /** Artwork bundled in /public, shown whenever the owner has no override. */
   readonly fallback: Dimensions & { readonly url: string }
   readonly recommended: Dimensions
+  /** The framing the slot's layout is designed for; other ratios are allowed with a warning. */
+  readonly ratio: Dimensions
   /** Smaller images are rejected: they would look soft even at 1x. */
   readonly minimum: Dimensions
 }
@@ -26,25 +28,24 @@ export const brandingMimeTypes: Readonly<Record<string, string>> = { 'image/png'
 export const brandingAccept = 'image/png,image/webp,.png,.webp'
 /** Sanity ceiling so a huge image cannot exhaust memory while it is decoded in the browser. */
 export const brandingMaxSide = 6000
-/** The framing both images were designed for (4:3). Other ratios are allowed with a warning. */
-export const brandingRatio = 4 / 3
-
-// The bundled file names are the reverse of what they show: the "hero-client" PNG (name only) is the header logo,
-// and the "logo-client" PNG (with «موقع» and the English line) is the hero artwork.
+// Both bundled images are the client's «أحمد الزهراني» artwork. The hero is the full lockup (16:9); the header logo is the
+// same artwork without the English line, so the Arabic name stays legible at header height (about 12:5).
 export const brandingSpecs: Readonly<Record<BrandingSlot, BrandingSpec>> = {
   headerLogo: {
     settingKey: 'branding.header_logo',
     folder: 'header-logo',
-    fallback: { url: '/ornaments/ahmad-zayed-hero-client.png', width: 1448, height: 1086 },
-    recommended: { width: 800, height: 600 },
-    minimum: { width: 400, height: 300 },
+    fallback: { url: '/branding/header-logo-ahmad-alzahrani.webp', width: 640, height: 280 },
+    recommended: { width: 1200, height: 500 },
+    ratio: { width: 12, height: 5 },
+    minimum: { width: 600, height: 250 },
   },
   heroImage: {
     settingKey: 'branding.hero_image',
     folder: 'hero-image',
-    fallback: { url: '/ornaments/ahmad-zayed-logo-client.png', width: 1448, height: 1086 },
-    recommended: { width: 1600, height: 1200 },
-    minimum: { width: 800, height: 600 },
+    fallback: { url: '/branding/hero-ahmad-alzahrani.webp', width: 1400, height: 788 },
+    recommended: { width: 1600, height: 900 },
+    ratio: { width: 16, height: 9 },
+    minimum: { width: 800, height: 450 },
   },
 }
 

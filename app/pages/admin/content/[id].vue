@@ -17,7 +17,7 @@ const draft = ref<ContentDraft>(emptyDraft())
 watch(record, (value) => { if (value) draft.value = structuredClone(toRaw(value)) }, { immediate: true })
 
 const { errors, saving, save } = useContentEditor(draft, id)
-useHead({ title: computed(() => `${record.value?.title ?? 'تعديل مادة'} | موقع أحمد زايد`) })
+useHead({ title: computed(() => `${record.value?.title ?? 'تعديل مادة'} | موقع أحمد الزهراني`) })
 </script>
 
 <template>

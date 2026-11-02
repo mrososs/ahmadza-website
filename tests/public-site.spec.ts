@@ -8,7 +8,7 @@ async function waitForHydration(page: Page) {
 test('homepage exposes the library and primary journeys', async ({ page }, testInfo) => {
   await page.goto('/')
   await waitForHydration(page)
-  await expect(page.getByRole('heading', { level: 1, name: 'أحمد زايد' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'أحمد الزهراني' })).toBeVisible()
   await expect(page.getByRole('navigation', { name: 'أقسام المكتبة الرئيسة' })).toBeVisible()
   if (testInfo.project.name.includes('mobile')) {
     await expect(page.getByRole('button', { name: 'فتح القائمة' })).toBeVisible()
@@ -19,6 +19,20 @@ test('homepage exposes the library and primary journeys', async ({ page }, testI
   await page.getByRole('link', { name: 'المقالات' }).first().click()
   await expect(page).toHaveURL(/\/articles$/)
   await expect(page.getByRole('heading', { level: 1, name: 'المقالات' })).toBeVisible()
+})
+
+test('homepage and header keep only the approved sections and links', async ({ page }, testInfo) => {
+  await page.goto('/')
+  await waitForHydration(page)
+  for (const removed of ['المكتبة الرقمية', 'اخترنا لكم', 'أحدث المواضيع في أقسام المكتبة'])
+    await expect(page.getByRole('heading', { name: removed })).toHaveCount(0)
+  await expect(page.getByText('تضم المكتبة الخطب والدروس والمقالات')).toHaveCount(0)
+  await expect(page.locator('#main-content h2')).toHaveText(['أحدث المنشورات'])
+  await expect(page.locator('details')).toHaveCount(0)
+  if (!testInfo.project.name.includes('mobile')) {
+    const nav = page.getByRole('navigation', { name: 'التنقل الرئيسي' })
+    await expect(nav.getByRole('link')).toHaveText(['الرئيسية', 'الخطب', 'المقالات', 'الصوتيات', 'الكتب', 'الفوائد', 'المرئيات'])
+  }
 })
 
 test('unified search is URL based and returns typed results', async ({ page }) => {

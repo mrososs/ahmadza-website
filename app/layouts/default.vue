@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const route = useRoute()
+useScrollReveal()
 // Both requests start together; the branding result is then shared by the header, footer and hero.
 const libraryRequest = useLibraryContent()
 const [{ data }] = await Promise.all([libraryRequest, useSiteBranding().ready])

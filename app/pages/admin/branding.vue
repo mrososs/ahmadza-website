@@ -2,7 +2,7 @@
 import { brandingSlots } from '~/types/branding'
 
 definePageMeta({ layout: 'admin', middleware: 'admin' })
-useHead({ title: 'هوية الموقع | موقع أحمد زايد' })
+useHead({ title: 'هوية الموقع | موقع أحمد الزهراني' })
 
 const { profile } = useAdminSession()
 // Owners only. The database enforces this too; hiding the controls is just the honest UX.

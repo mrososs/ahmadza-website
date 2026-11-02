@@ -4,7 +4,7 @@ import { z } from 'zod'
 import type { AdminCategory, FieldErrors } from '~/types/admin'
 
 definePageMeta({ layout: 'admin', middleware: 'admin' })
-useHead({ title: 'التصنيفات | موقع أحمد زايد' })
+useHead({ title: 'التصنيفات | موقع أحمد الزهراني' })
 
 const { push } = useAdminNotice()
 const { data: categories, error, status, refresh } = await useAsyncData('admin-categories', async () => (await useAdminRepository()).listCategories(), { server: false })

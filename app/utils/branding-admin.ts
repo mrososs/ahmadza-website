@@ -1,5 +1,5 @@
 import type { BrandingSlot } from '~/types/branding'
-import { brandingMaxSide, brandingRatio, brandingSpecs, type Dimensions } from '~/utils/branding'
+import { brandingMaxSide, brandingSpecs, type Dimensions } from '~/utils/branding'
 
 interface BrandingCopy {
   title: string
@@ -15,15 +15,15 @@ export const brandingCopy: Readonly<Record<BrandingSlot, BrandingCopy>> = {
   headerLogo: {
     title: 'شعار الموقع',
     subtitle: 'الشعار الذي يظهر في رأس الموقع.',
-    helper: 'المقاس الموصى به: 800 × 600 بكسل\n(نسبة 4:3).\nالصيغ المدعومة: PNG أو WebP.\nيُفضّل استخدام خلفية شفافة.\nالحد الأقصى: 5 ميجابايت.',
+    helper: 'المقاس الموصى به: 1200 × 500 بكسل\n(نسبة 12:5، عريضة قليلًا).\nالصيغ المدعومة: PNG أو WebP.\nيُفضّل استخدام خلفية شفافة.\nالحد الأقصى: 5 ميجابايت.',
     savedMessage: 'تم حفظ شعار الموقع، وسيظهر في رأس الموقع عند فتح أي صفحة.',
     resetMessage: 'عاد شعار الموقع إلى الصورة الافتراضية.',
   },
   heroImage: {
     title: 'صورة الواجهة الرئيسية',
     subtitle: 'الصورة الرئيسية التي تظهر أعلى الموقع.',
-    helper: 'المقاس الموصى به: 1600 × 1200 بكسل\n(نسبة 4:3).\nالصيغ المدعومة: PNG أو WebP.\nيُفضّل استخدام خلفية شفافة.\nالحد الأقصى: 5 ميجابايت.',
-    hint: 'يُفضّل أن تتضمن الصورة كلمة «موقع»،\nواسم «أحمد زايد» بالخط العربي،\nوعبارة Website Ahmed Zayed.',
+    helper: 'المقاس الموصى به: 1600 × 900 بكسل\n(نسبة 16:9).\nالصيغ المدعومة: PNG أو WebP.\nيُفضّل استخدام خلفية شفافة.\nالحد الأقصى: 5 ميجابايت.',
+    hint: 'يُفضّل أن تتضمن الصورة كلمة «موقع»،\nواسم «أحمد الزهراني» بالخط العربي،\nوعبارة Website Ahmed Alzahrani.',
     savedMessage: 'تم حفظ صورة الواجهة الرئيسية، وستظهر أعلى الموقع عند فتح أي صفحة.',
     resetMessage: 'عادت صورة الواجهة الرئيسية إلى الصورة الافتراضية.',
   },
@@ -51,7 +51,7 @@ export function formatFileSize(bytes: number): string {
 }
 
 export function assessBrandingImage(slot: BrandingSlot, info: BrandingImageInfo): BrandingAssessment {
-  const { minimum, recommended } = brandingSpecs[slot]
+  const { minimum, recommended, ratio } = brandingSpecs[slot]
 
   if (info.width < minimum.width || info.height < minimum.height) {
     return { error: `الصورة صغيرة جدًا (${sizeLabel(info)} بكسل). الحد الأدنى ${sizeLabel(minimum)} بكسل، والموصى به ${sizeLabel(recommended)}.`, warnings: [] }
@@ -64,8 +64,8 @@ export function assessBrandingImage(slot: BrandingSlot, info: BrandingImageInfo)
   if (info.width < recommended.width || info.height < recommended.height) {
     warnings.push(`الصورة أقل من المقاس الموصى به (${sizeLabel(recommended)} بكسل)، وقد تبدو أقل حدّة على الشاشات عالية الدقة.`)
   }
-  if (Math.abs(info.width / info.height / brandingRatio - 1) > 0.12) {
-    warnings.push('نسبة الصورة تختلف عن 4:3. ستظهر كاملة دون قص أو تمطيط، لكن قد تبدو أصغر أو بهوامش إضافية.')
+  if (Math.abs(info.width / info.height / (ratio.width / ratio.height) - 1) > 0.12) {
+    warnings.push(`نسبة الصورة تختلف عن ${ratio.width}:${ratio.height}. ستظهر كاملة دون قص أو تمطيط، لكن قد تبدو أصغر أو بهوامش إضافية.`)
   }
   if (info.hasTransparency === false) {
     warnings.push('الصورة بلا خلفية شفافة، وستظهر خلفيتها كمستطيل فوق خلفية الموقع.')

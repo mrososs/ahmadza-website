@@ -1,10 +1,11 @@
 <script setup lang="ts">
 const year = new Date().getFullYear()
+const { authorDisplayName } = useRuntimeConfig().public
 const isDemo = useIsDemoContent()
 
 const groups = [
   { label: 'المكتبة', links: [{ to: '/articles', label: 'المقالات' }, { to: '/books', label: 'الكتب' }, { to: '/sermons', label: 'الخطب' }, { to: '/audio', label: 'الصوتيات' }] },
-  { label: 'استكشف', links: [{ to: '/benefits', label: 'الفوائد' }, { to: '/videos', label: 'المرئيات' }, { to: '/search', label: 'البحث الموحّد' }, { to: '/about', label: 'عن الموقع' }] },
+  { label: 'استكشف', links: [{ to: '/benefits', label: 'الفوائد' }, { to: '/videos', label: 'المرئيات' }, { to: '/search', label: 'البحث الموحّد' }] },
 ]
 </script>
 
@@ -26,7 +27,7 @@ const groups = [
     </div>
     <div class="site-footer__bar">
       <div class="ref-container site-footer__bottom">
-        <p>© {{ year }} — جميع الحقوق محفوظة.</p>
+        <p>موقع {{ authorDisplayName }}. {{ year }} جميع الحقوق محفوظة.</p>
         <p v-if="isDemo">المواد المعروضة بيانات تجريبية، وليست سيرةً أو مؤلفاتٍ منسوبة إلى صاحب الموقع.</p>
       </div>
     </div>

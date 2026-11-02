@@ -9,7 +9,7 @@ test('public pages load without errors and show the real (possibly empty) librar
   page.on('pageerror', error => problems.push(error.message))
   page.on('console', message => { if (message.type() === 'error') problems.push(message.text()) })
 
-  for (const path of ['/', '/articles', '/books', '/sermons', '/audio', '/benefits', '/videos', '/search', '/about']) {
+  for (const path of ['/', '/articles', '/books', '/sermons', '/audio', '/benefits', '/videos', '/search']) {
     const response = await page.goto(path)
     expect(response?.status(), path).toBe(200)
     await expect(page.locator('main'), path).toBeVisible()

@@ -4,7 +4,7 @@ import { publishStatuses, publishStatusLabels } from '~/types/admin'
 import { contentTypeLabels, contentTypes, type ContentType, type PublishStatus } from '~/types/content'
 
 definePageMeta({ layout: 'admin', middleware: 'admin' })
-useHead({ title: 'المحتوى | موقع أحمد زايد' })
+useHead({ title: 'المحتوى | موقع أحمد الزهراني' })
 
 const route = useRoute()
 const router = useRouter()

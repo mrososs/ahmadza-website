@@ -26,16 +26,16 @@ test('shows the current images, the recommended sizes and the exact Arabic guida
   const logo = slot(page, 'headerLogo')
   await expect(logo.getByRole('heading', { level: 2, name: 'شعار الموقع' })).toBeVisible()
   await expect(logo.getByText('الشعار الذي يظهر في رأس الموقع.')).toBeVisible()
-  await expect(logo.getByTestId('branding-helper')).toHaveText('المقاس الموصى به: 800 × 600 بكسل (نسبة 4:3). الصيغ المدعومة: PNG أو WebP. يُفضّل استخدام خلفية شفافة. الحد الأقصى: 5 ميجابايت.')
+  await expect(logo.getByTestId('branding-helper')).toHaveText('المقاس الموصى به: 1200 × 500 بكسل (نسبة 12:5، عريضة قليلًا). الصيغ المدعومة: PNG أو WebP. يُفضّل استخدام خلفية شفافة. الحد الأقصى: 5 ميجابايت.')
   await expect(logo.getByTestId('branding-current').getByText('الصورة الحالية')).toBeVisible()
-  await expect(logo.getByTestId('branding-current').getByRole('img')).toHaveAttribute('src', '/ornaments/ahmad-zayed-hero-client.png')
+  await expect(logo.getByTestId('branding-current').getByRole('img')).toHaveAttribute('src', '/branding/header-logo-ahmad-alzahrani.webp')
 
   const hero = slot(page, 'heroImage')
   await expect(hero.getByRole('heading', { level: 2, name: 'صورة الواجهة الرئيسية' })).toBeVisible()
   await expect(hero.getByText('الصورة الرئيسية التي تظهر أعلى الموقع.')).toBeVisible()
-  await expect(hero.getByTestId('branding-helper')).toHaveText('المقاس الموصى به: 1600 × 1200 بكسل (نسبة 4:3). الصيغ المدعومة: PNG أو WebP. يُفضّل استخدام خلفية شفافة. الحد الأقصى: 5 ميجابايت.')
-  await expect(hero.getByText('يُفضّل أن تتضمن الصورة كلمة «موقع»، واسم «أحمد زايد» بالخط العربي، وعبارة Website Ahmed Zayed.')).toBeVisible()
-  await expect(hero.getByTestId('branding-current').getByRole('img')).toHaveAttribute('src', '/ornaments/ahmad-zayed-logo-client.png')
+  await expect(hero.getByTestId('branding-helper')).toHaveText('المقاس الموصى به: 1600 × 900 بكسل (نسبة 16:9). الصيغ المدعومة: PNG أو WebP. يُفضّل استخدام خلفية شفافة. الحد الأقصى: 5 ميجابايت.')
+  await expect(hero.getByText('يُفضّل أن تتضمن الصورة كلمة «موقع»، واسم «أحمد الزهراني» بالخط العربي، وعبارة Website Ahmed Alzahrani.')).toBeVisible()
+  await expect(hero.getByTestId('branding-current').getByRole('img')).toHaveAttribute('src', '/branding/hero-ahmad-alzahrani.webp')
 
   // Nothing to save or restore until the owner picks something.
   for (const section of [logo, hero]) {
@@ -66,20 +66,20 @@ test('rejects unsupported, oversized, unreadable and too-small files without tou
 
   await expect(logo.getByTestId('branding-new')).toHaveCount(0)
   await expect(logo.getByRole('button', { name: 'حفظ التغييرات' })).toBeDisabled()
-  await expect(logo.getByTestId('branding-current').getByRole('img')).toHaveAttribute('src', '/ornaments/ahmad-zayed-hero-client.png')
+  await expect(logo.getByTestId('branding-current').getByRole('img')).toHaveAttribute('src', '/branding/header-logo-ahmad-alzahrani.webp')
 })
 
 test('warns about ratio, resolution, transparency and clipping, then saves, previews and restores the default', async ({ page }) => {
   await openBranding(page)
   const hero = slot(page, 'heroImage')
 
-  // Wider than 4:3, below the recommended size and with no transparency: three warnings, still allowed.
-  await pick(hero, 'hero.png', 'image/png', makePng(1100, 650, 'opaque'))
+  // Squarer than 16:9, below the recommended size and with no transparency: three warnings, still allowed.
+  await pick(hero, 'hero.png', 'image/png', makePng(1100, 800, 'opaque'))
   const preview = hero.getByTestId('branding-new')
   await expect(preview.getByText('الصورة الجديدة')).toBeVisible()
-  await expect(preview).toContainText('1100 × 650')
+  await expect(preview).toContainText('1100 × 800')
   const warnings = hero.getByRole('list', { name: 'تنبيهات على الصورة الجديدة' })
-  await expect(warnings).toContainText('نسبة الصورة تختلف عن 4:3')
+  await expect(warnings).toContainText('نسبة الصورة تختلف عن 16:9')
   await expect(warnings).toContainText('أقل من المقاس الموصى به')
   await expect(warnings).toContainText('بلا خلفية شفافة')
 
@@ -93,16 +93,16 @@ test('warns about ratio, resolution, transparency and clipping, then saves, prev
   await hero.getByRole('button', { name: 'إلغاء' }).click()
   await expect(hero.getByTestId('branding-new')).toHaveCount(0)
 
-  await pick(hero, 'good.png', 'image/png', makePng(1600, 1200))
+  await pick(hero, 'good.png', 'image/png', makePng(1600, 900))
   await expect(hero.getByRole('list', { name: 'تنبيهات على الصورة الجديدة' })).toHaveCount(0)
   await hero.getByRole('button', { name: 'حفظ التغييرات' }).click()
   await expect(hero.getByRole('status').filter({ hasText: 'تم حفظ صورة الواجهة الرئيسية' })).toBeVisible()
   await expect(hero.getByTestId('branding-new')).toHaveCount(0)
   await expect(hero.getByTestId('branding-current').getByRole('img')).toHaveAttribute('src', /^blob:/)
-  await expect(hero.getByTestId('branding-current')).toContainText('1600 × 1200')
+  await expect(hero.getByTestId('branding-current')).toContainText('1600 × 900')
 
   // The other image is untouched: the forms are independent.
-  await expect(slot(page, 'headerLogo').getByTestId('branding-current').getByRole('img')).toHaveAttribute('src', '/ornaments/ahmad-zayed-hero-client.png')
+  await expect(slot(page, 'headerLogo').getByTestId('branding-current').getByRole('img')).toHaveAttribute('src', '/branding/header-logo-ahmad-alzahrani.webp')
 
   // Restoring asks first; cancelling keeps the uploaded image.
   await hero.getByRole('button', { name: 'استعادة الصورة الافتراضية' }).click()
@@ -114,7 +114,7 @@ test('warns about ratio, resolution, transparency and clipping, then saves, prev
   await hero.getByRole('button', { name: 'استعادة الصورة الافتراضية' }).click()
   await dialog.getByRole('button', { name: 'نعم، استعد الصورة الافتراضية' }).click()
   await expect(hero.getByRole('status').filter({ hasText: 'عادت صورة الواجهة الرئيسية إلى الصورة الافتراضية' })).toBeVisible()
-  await expect(hero.getByTestId('branding-current').getByRole('img')).toHaveAttribute('src', '/ornaments/ahmad-zayed-logo-client.png')
+  await expect(hero.getByTestId('branding-current').getByRole('img')).toHaveAttribute('src', '/branding/hero-ahmad-alzahrani.webp')
   await expect(hero.getByRole('button', { name: 'استعادة الصورة الافتراضية' })).toBeDisabled()
 })
 

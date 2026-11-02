@@ -6,7 +6,7 @@
 
 The site is a traditional Arabic digital library: direct routes into written, audio, and visual material; a charcoal ornamental masthead; and a moving orange publication ribbon. It follows the measured visual hierarchy of the client-approved reference while using the client's identity, original floral artwork, and independently implemented components.
 
-The first viewport centers the client-supplied transparent PNG composition with «موقع», «أحمد زايد», and its English signature over the original charcoal ornamental background. The plain-name PNG is the header logo; the original vector mark remains in the footer. Search sits in the header; the publication ribbon crosses the base of the hero. Below it, a warm floral edge introduces the library and category modules. The visitor then moves through compact, type-specific registers. Inner page titles use a restrained version of the floral background and a brass rule.
+The first viewport centers the client-supplied transparent PNG composition with «موقع», «أحمد الزهراني», and its English signature over the original charcoal ornamental background. The plain-name PNG is the header logo; the original vector mark remains in the footer. Search sits in the header; the publication ribbon crosses the base of the hero. Below it, a warm floral edge introduces the library and category modules. The visitor then moves through compact, type-specific registers. Inner page titles use a restrained version of the floral background and a brass rule.
 
 ### Raised disciplines
 

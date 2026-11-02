@@ -70,12 +70,12 @@ The owner can replace two images without touching code or redeploying:
 
 | Image | Used by | Recommended | Bundled fallback |
 | --- | --- | --- | --- |
-| شعار الموقع (header logo) | `BrandMark` in the header and footer, and the admin top bar | 800 × 600 px (4:3) | `/ornaments/ahmad-zayed-hero-client.png` |
-| صورة الواجهة الرئيسية (hero) | `SiteMasthead` | 1600 × 1200 px (4:3) | `/ornaments/ahmad-zayed-logo-client.png` |
+| شعار الموقع (header logo) | `BrandMark` in the header and footer, and the admin top bar | 1200 × 500 px (12:5) | `/branding/header-logo-ahmad-alzahrani.webp` |
+| صورة الواجهة الرئيسية (hero) | `SiteMasthead` | 1600 × 900 px (16:9) | `/branding/hero-ahmad-alzahrani.webp` |
 
-The bundled file names are the reverse of what they show; the table above is authoritative.
+Both bundled images are the client's «أحمد الزهراني» artwork. The hero is the full lockup; the header logo is the same artwork without the English line so the Arabic name stays legible at header height. The bundled header logo is a single-colour warm-white version (like the previous logo) because the header and footer are dark; a custom logo should also be light or have a light outline. The hero is the same warm-white version, shown with its own transparency at most 500px wide on the dark hero; custom uploads should be light too.
 
-- **Validation (browser):** PNG or WebP only, 5 MB maximum, readable as an image, at least 400 × 300 (logo) / 800 × 600 (hero) and at most 6000 px per side. Warnings, which never block saving: ratio far from 4:3, below the recommended size, no transparent background, artwork touching the image border. The site never crops: both images are shown with `object-fit: contain`.
+- **Validation (browser):** PNG or WebP only, 5 MB maximum, readable as an image, at least 600 × 250 (logo) / 800 × 450 (hero) and at most 6000 px per side. Warnings, which never block saving: ratio far from the slot's own ratio (12:5 logo, 16:9 hero), below the recommended size, no transparent background, artwork touching the image border. The site never crops: both images are shown with `object-fit: contain`.
 - **Storage:** public bucket `site-branding` (5 MB and PNG/WebP enforced by Storage). Every upload gets a new `header-logo/<uuid>.<ext>` or `hero-image/<uuid>.<ext>` path, so a file is never overwritten and every URL is cache-safe. No SVG.
 - **Setting rows:** `site_settings` keys `branding.header_logo` and `branding.hero_image` (`public_readable = true`), value `{ url, storagePath, alt, width, height, updatedAt }`. A check constraint requires the URL to point at that exact storage path. No row means the bundled image.
 - **Authorization:** only an active `owner` can insert/update/delete these two keys and upload/delete files in the bucket (`is_active_owner()` in RLS). Editors can read settings but not change them, and do not see the menu entry.

@@ -4,7 +4,7 @@ import { contentTypePluralLabels, contentTypes } from '~/types/content'
 import { publishStatuses, publishStatusLabels } from '~/types/admin'
 
 definePageMeta({ layout: 'admin', middleware: 'admin' })
-useHead({ title: 'لوحة التحكم | موقع أحمد زايد' })
+useHead({ title: 'لوحة التحكم | موقع أحمد الزهراني' })
 
 const { data: stats, error, status, refresh } = await useAsyncData('admin-stats', async () => (await useAdminRepository()).stats(), { server: false })
 const formatDate = (iso: string) => new Intl.DateTimeFormat('ar', { dateStyle: 'medium' }).format(new Date(iso))
