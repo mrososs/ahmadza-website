@@ -373,7 +373,7 @@ body, button, input, textarea, select { font-family: var(--font-library); }
 .site-header .brand-mark__seal { color: #e4d5b1; border-color: #e4d5b1; }
 .site-header .desktop-nav > a.router-link-active { color: #fff; }
 .site-header .header-search { background: #ff9300; color: #292929; border-radius: 5px; }
-.library-masthead { background: #454545; }
+.library-masthead { background: #1f1d39; }
 .library-masthead__pattern { opacity: .12; background-image: url('/ornaments/floral-medallion.png'), url('/ornaments/floral-medallion.png'); background-size: 790px 790px, 460px 460px; background-position: 50% 44%, -200px -190px; background-repeat: no-repeat; filter: grayscale(1) sepia(1); }
 .library-masthead__inner { min-height: 385px; padding-block: 1.2rem 2.1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .library-masthead h1 { max-width: 900px; margin-block: .65rem .45rem; color: #eee5cb; font-family: var(--font-library); font-size: clamp(3.3rem, 7.2vw, 6rem); font-weight: 400; line-height: 1.18; text-wrap: balance; text-shadow: 0 2px 2px rgb(0 0 0 / .16); }
