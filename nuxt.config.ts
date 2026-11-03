@@ -25,6 +25,7 @@ export default defineNuxtConfig({
     '@fontsource/noto-naskh-arabic/600.css',
     '@fontsource/noto-naskh-arabic/700.css',
     '~/assets/css/main.css',
+    '~/assets/css/content.css',
   ],
   vite: {
     plugins: [tailwindcss()],
@@ -48,6 +49,8 @@ export default defineNuxtConfig({
       // The publishable key is designed for browsers; RLS and admin_profiles gate every write.
       supabaseUrl: '',
       supabasePublishableKey: '',
+      // Largest video an editor may upload, in MB. The `videos` bucket enforces its own limit (200 MB); keep this at or below it.
+      videoMaxMb: 200,
       siteUrl: 'https://prof-ahmadza.com',
       siteName: 'مكتبة أحمد الزهراني الرقمية',
       authorDisplayName: 'أحمد الزهراني',

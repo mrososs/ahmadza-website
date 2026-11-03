@@ -58,6 +58,7 @@ const video = (seed: Seed, durationSeconds: number): ContentItem => ({
   ...common('video', seed),
   type: 'video',
   durationSeconds,
+  downloadAllowed: false,
   sections: [{ id: 'summary', paragraphs: [demoNotice, seed.body] }],
 })
 const book = (seed: Seed, publicationYear: number, pageCount: number): ContentItem => ({

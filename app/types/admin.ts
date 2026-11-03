@@ -1,4 +1,4 @@
-import type { ContentSection, ContentType, PublishStatus } from '~/types/content'
+import type { ContentType, PublishStatus, VideoSource } from '~/types/content'
 
 export type AdminRole = 'owner' | 'editor'
 
@@ -35,7 +35,8 @@ export interface ContentDraft {
   slug: string
   title: string
   excerpt: string
-  sections: ContentSection[]
+  /** HTML from the rich editor, sanitized on save. Empty string for no body. */
+  bodyHtml: string
   status: PublishStatus
   publishedAt: string
   scheduledAt: string
@@ -50,10 +51,17 @@ export interface ContentDraft {
   pageCount: string
   pdfUrl: string
   coverUrl: string
+  /** Book PDF download, or the video file download for uploaded videos. */
   downloadAllowed: boolean
   audioUrl: string
   durationSeconds: string
+  /** What the editor typed or pasted (a link or a bare id); `parseYoutubeInput` turns it into the stored id. */
   youtubeId: string
+  videoSource: VideoSource
+  /** Storage path, type and size of an uploaded video that is waiting for (or already has) a saved record. */
+  videoPath: string
+  videoMimeType: string
+  videoBytes: string
 }
 
 export interface AdminContentRecord extends ContentDraft {

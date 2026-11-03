@@ -15,7 +15,8 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    return await repository.list(options)
+    const result = await repository.list(options)
+    return { ...result, items: result.items.map(withoutRichBody) }
   }
   catch (cause) {
     console.error('Content repository list failure', cause)

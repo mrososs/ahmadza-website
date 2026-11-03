@@ -248,8 +248,6 @@ img, svg, video, iframe { display: block; max-width: 100%; }
 @media print {
   .book-reader { display: none; }
 }
-.video-embed { grid-column: 1 / -1; aspect-ratio: 16 / 9; }
-.video-embed iframe { width: 100%; height: 100%; border: 0; }
 .related-content { padding-block: 5rem; background: var(--paper-raised); border-block-start: 1px solid var(--rule); }
 .about-portrait { display: grid; place-items: center; align-content: center; aspect-ratio: 4 / 5; background: var(--forest); color: white; border: 1px solid #ad8b50; }
 .about-portrait span { font-family: "Noto Naskh Arabic", serif; font-size: 5rem; color: #e2cb99; }
@@ -609,14 +607,6 @@ body, button, input, textarea, select { font-family: var(--font-library); }
 .latest-carousel__track { display: flex; gap: 1.5rem; margin: 3.4rem 0 0; padding: .5rem .25rem 1.5rem; list-style: none; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
 .latest-carousel__track::-webkit-scrollbar { display: none; }
 .latest-carousel__track > li { flex: 0 0 calc((100% - 3rem) / 3); scroll-snap-align: start; }
-.post-card { display: flex; flex-direction: column; height: 100%; padding: 1.5rem; border-radius: 8px; background: #fff; box-shadow: 0 4px 22px rgb(0 0 0 / .1); }
-.post-card h3 { margin: 0 0 1rem; font-size: 1.15rem; line-height: 1.6; }
-.post-card h3 a { color: var(--ref-ink); text-decoration: none; }
-.post-card p { margin: 0 0 1.5rem; color: #555; font-size: .9rem; line-height: 1.9; display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.post-card footer { display: flex; align-items: center; gap: .8rem; margin-block-start: auto; }
-.post-card footer > span:last-child { display: grid; font-size: .85rem; }
-.post-card time { color: #666; font-size: .78rem; }
-.post-card__avatar { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: #e8e8e8; color: #555; font-size: 1.4rem; }
 /* Selected for you. */
 /* Latest topics: vertical tab list + checked list. */
 /* YouTube band. */
@@ -753,7 +743,6 @@ html { scroll-padding-block-start: 8.5rem; }
 .share-actions .round-action { width: 44px; min-height: 44px; padding: 0; border: 0; background: #111; color: var(--ref-orange); }
 /* Layout check: 44px touch targets for text links, and a centred video row that stays balanced with 1-3 items. */
 .ref-list a, .post-card h3 a, .site-footer__grid a, .breadcrumbs a, .table-of-contents a { display: inline-flex; align-items: center; min-height: 44px; }
-.post-card h3 a { display: flex; min-height: 0; padding-block: .35rem; }
 .youtube-band__grid { display: flex; flex-wrap: wrap; justify-content: center; }
 .youtube-band__grid > li { flex: 0 1 calc((100% - 3rem) / 3); }
 @media (max-width: 1024px) {
@@ -784,29 +773,13 @@ img.category-card__art { width: 100px; height: 150px; }
   .site-footer__links { gap: 2.5rem; }
   .site-footer__bottom { flex-direction: column; }
 }
-/* Video placeholder posters: a labelled preview (never implies a playable file) used on the home band and /videos. */
-.video-placeholder { position: relative; display: grid; place-items: center; aspect-ratio: 16 / 9; overflow: hidden; border: 1px solid rgb(255 255 255 / 30%); border-radius: 8px; background: #262626; color: #ffb84d; }
-.video-placeholder::before { content: ''; position: absolute; inset: -30%; background: url('/ornaments/floral-medallion.png') center / contain no-repeat; opacity: .16; filter: grayscale(1) sepia(1) brightness(1.1); }
-.video-placeholder__play { position: relative; display: grid; place-items: center; width: 60px; height: 60px; border: 2px solid rgb(255 140 0 / 70%); border-radius: 50%; background: rgb(255 255 255 / 6%); }
-.video-placeholder__tag, .video-placeholder__time { position: absolute; inset-block-end: .55rem; padding: .15rem .55rem; border-radius: 4px; background: rgb(38 38 38 / 88%); color: #fff; font-size: .78rem; line-height: 1.6; }
-.video-placeholder__tag { inset-block: .55rem auto; inset-inline-start: .55rem; color: #ffb84d; }
-.video-placeholder__time { inset-inline-end: .55rem; }
 .youtube-band__card { gap: .5rem; align-content: start; }
-.youtube-band__card small { color: #e3e3e3; font-size: .8rem; }
 .youtube-band__grid > li { flex-basis: calc((100% - 4.5rem) / 4); }
-.video-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; margin: 0; padding: 0; list-style: none; }
-.video-grid li { display: grid; align-content: start; gap: .5rem; }
-.video-grid h2 { margin: .35rem 0 0; font-size: 1.1rem; line-height: 1.7; color: var(--ref-ink); }
-.video-grid p { margin: 0; color: #555; font-size: .9rem; line-height: 1.8; }
-.video-grid__meta { display: flex; flex-wrap: wrap; gap: .25rem 1rem; font-size: .82rem !important; }
-.video-grid small { color: var(--ref-orange-text); font-weight: 700; }
 @media (max-width: 1024px) {
   .youtube-band__grid > li { flex-basis: calc((100% - 1.5rem) / 2); }
-  .video-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 600px) {
   .youtube-band__grid > li { flex-basis: 100%; }
-  .video-grid { grid-template-columns: 1fr; }
 }
 .book-cover { display: block; inline-size: 200px; max-inline-size: 100%; aspect-ratio: 2 / 3; object-fit: cover; margin-block-end: 1.5rem; border: 1px solid var(--rule); border-radius: 6px; }
 .library-masthead__name :is(h1, .library-masthead__heading) img { max-height: 100%; object-fit: contain; }
@@ -828,3 +801,18 @@ html { scrollbar-width: thin; scrollbar-color: var(--library-orange) var(--libra
 .reveal-pending { opacity: 0; transform: translateY(28px); }
 .reveal-pending.reveal-in { opacity: 1; transform: none; transition: opacity .7s ease-out, transform .7s cubic-bezier(.22, .61, .36, 1); }
 @media (prefers-reduced-motion: reduce) { .reveal-pending { opacity: 1; transform: none; } }
+
+/* Latest-publications strip (ticker) v3: the established navy with white type, separated by small brass diamonds. */
+.latest-ticker { position: relative; background: var(--ref-navy); color: #fff; border-block: 1px solid rgb(255 255 255 / 10%); }
+.latest-ticker__viewport { padding-block: .35rem; }
+.latest-ticker__set { gap: 0; padding-inline-end: 0; }
+.latest-ticker__set a { min-height: 48px; padding: .4rem 1.6rem; border-radius: 0; background: transparent; color: #fff; font-weight: 600; text-underline-offset: .3em; transition: color .2s ease; }
+.latest-ticker__set a::after { content: ''; inline-size: 7px; block-size: 7px; margin-inline-start: 3.2rem; padding: 0; background: #d9bd83; transform: rotate(45deg); }
+.latest-ticker__set a:hover { color: #f0dcae; text-decoration: underline; }
+.latest-ticker__set a:focus-visible { outline: 2px solid #fff; outline-offset: -4px; }
+.latest-ticker__track--paused { animation-play-state: paused !important; }
+/* The control sits over the end of the strip, on the same navy, so the moving links never run under it. */
+.latest-ticker__toggle { position: absolute; z-index: 2; inset-block: 0; inset-inline-start: 0; display: grid; place-items: center; inline-size: 52px; border: 0; border-inline-end: 1px solid rgb(255 255 255 / 14%); background: var(--ref-navy); color: #fff; cursor: pointer; }
+.latest-ticker__toggle:hover { color: #f0dcae; }
+.latest-ticker__toggle:focus-visible { outline: 2px solid #fff; outline-offset: -4px; }
+@media (prefers-reduced-motion: reduce) { .latest-ticker__toggle { display: none; } }

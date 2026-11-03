@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
   try {
     const result = await getContentRepository().getBySlug(type as ContentType, slug)
     if (!result) throw createError({ statusCode: 404, statusMessage: 'المحتوى غير موجود' })
-    return result
+    return { ...result, item: withSafeBody(result.item), related: result.related.map(withoutRichBody) }
   }
   catch (cause) {
     if (isError(cause) && cause.statusCode === 404) throw cause

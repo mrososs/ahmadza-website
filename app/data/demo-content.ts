@@ -22,6 +22,25 @@ const coreDemoContent: readonly ContentItem[] = [
     ],
   },
   {
+    id: 'article-rich-formatting',
+    type: 'article',
+    slug: 'formatted-article-sample',
+    title: 'نموذج مقال منسّق: عناوين وقوائم واقتباسات',
+    excerpt: 'مقال تجريبي يعرض تنسيق النص الغني كما يظهر للزائر: العناوين والقوائم والاقتباسات والروابط.',
+    status: 'published',
+    publishedAt: '2026-10-25T09:00:00.000Z',
+    updatedAt: '2026-10-25T09:00:00.000Z',
+    categories: [learning],
+    featured: false,
+    readingMinutes: 4,
+    coverUrl: '/ornaments/ahmad-zayed-banner.png',
+    sections: [{
+      id: 'body',
+      paragraphs: [],
+      html: `<p>${demoNotice}</p><h2>العنوان الرئيس للفقرة</h2><p>تبدأ الفقرة بجملة تمهيدية، ثم تتبعها <strong>عبارة مهمة</strong> و<em>عبارة مائلة</em> وكلمة <u>مسطّرة</u>، وبعدها <a href="https://example.com/">رابط خارجي</a> للمزيد.</p><h3>عنوان فرعي</h3><ul><li>نقطة أولى في القائمة</li><li>نقطة ثانية في القائمة</li></ul><ol><li>الخطوة الأولى</li><li>الخطوة الثانية</li></ol><blockquote>الاقتباس الجيد يُلخّص الفكرة بإيجاز.</blockquote><h4>عنوان ثالث المستوى</h4><p>خاتمة قصيرة تغلق المقال.</p>`,
+    }],
+  },
+  {
     id: 'article-patient-learning',
     type: 'article',
     slug: 'patient-learning',
@@ -181,6 +200,7 @@ const coreDemoContent: readonly ContentItem[] = [
     categories: [thought, learning],
     featured: true,
     durationSeconds: 1080,
+    downloadAllowed: false,
     sections: [{ id: 'summary', paragraphs: [demoNotice, 'وصف تجريبي لعرض بطاقة مرئية وبياناتها من دون تضمين رابط غير موثوق.'] }],
   },
   {
@@ -195,6 +215,7 @@ const coreDemoContent: readonly ContentItem[] = [
     categories: [thought],
     featured: false,
     durationSeconds: 940,
+    downloadAllowed: false,
     sections: [{ id: 'summary', paragraphs: [demoNotice] }],
   },
 ]

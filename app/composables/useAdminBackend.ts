@@ -15,10 +15,10 @@ let resolved: Promise<ResolvedBackend> | undefined
  */
 export function useAdminBackend(): Promise<ResolvedBackend> {
   resolved ??= (async (): Promise<ResolvedBackend> => {
-    const { supabaseUrl, supabasePublishableKey } = useRuntimeConfig().public
+    const { supabaseUrl, supabasePublishableKey, videoMaxMb } = useRuntimeConfig().public
     if (supabaseUrl && supabasePublishableKey) {
       const { createSupabaseAdminBackend } = await import('~/repositories/admin/supabase-admin')
-      return { mode: 'supabase', backend: createSupabaseAdminBackend(supabaseUrl, supabasePublishableKey) }
+      return { mode: 'supabase', backend: createSupabaseAdminBackend(supabaseUrl, supabasePublishableKey, videoMaxMb) }
     }
     if (import.meta.dev) {
       const { createDemoAdminBackend } = await import('~/repositories/admin/demo-admin')

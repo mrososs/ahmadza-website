@@ -1,0 +1,107 @@
+/* Content presentation: cards, article reading typography, cover images and the video player.
+   Loaded after main.css. Colours come from its tokens: --ref-navy (the established navy), --brass and --paper. */
+
+:root {
+  --content-line: rgb(23 48 59 / 14%);
+  --content-muted: #4d5b62;
+  --content-type: #7a5a1f; /* brass dark enough for AA text on white */
+  --content-star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64' fill='none' stroke='%23d9bd83' stroke-opacity='.28'%3E%3Cpath d='M58 32 42.2 27.8 50.4 13.6 36.2 21.8 32 6 27.8 21.8 13.6 13.6 21.8 27.8 6 32 21.8 36.2 13.6 50.4 27.8 42.2 32 58 36.2 42.2 50.4 50.4 42.2 36.2Z'/%3E%3C/svg%3E");
+}
+
+/* ---------- Card grid ---------- */
+.content-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr)); gap: 1.5rem; margin: 0; padding: 0; list-style: none; }
+.content-grid > li { display: flex; min-width: 0; }
+
+.content-card { position: relative; display: flex; flex-direction: column; inline-size: 100%; height: 100%; overflow: hidden; background: #fff; border: 1px solid var(--content-line); border-radius: 12px; box-shadow: 0 1px 2px rgb(23 48 59 / 6%); transition: box-shadow .25s ease, transform .25s ease, border-color .25s ease; }
+.content-card:hover { transform: translateY(-3px); border-color: rgb(167 124 50 / 65%); box-shadow: 0 12px 28px rgb(23 48 59 / 12%); }
+.content-card:has(.content-card__link:focus-visible) { outline: 3px solid var(--ref-navy); outline-offset: 3px; }
+/* One link covers the whole card, so the card has one tab stop and the heading is its accessible name. */
+.content-card__link { color: inherit; text-decoration: none; }
+.content-card__link::after { content: ''; position: absolute; inset: 0; z-index: 1; }
+.content-card__link:focus-visible { outline: none; }
+
+.content-card__body { display: flex; flex: 1; flex-direction: column; gap: .5rem; padding: 1rem 1.15rem 1.15rem; }
+.content-card__kicker { display: flex; align-items: baseline; justify-content: space-between; gap: .75rem; margin: 0; font-size: .8rem; color: var(--content-muted); }
+.content-card__type { color: var(--content-type); font-weight: 700; }
+.content-card__title { display: -webkit-box; margin: 0; overflow: hidden; color: var(--ref-navy); font-size: 1.15rem; font-weight: 700; line-height: 1.7; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; }
+.content-card__text { display: -webkit-box; margin: 0; overflow: hidden; color: #3b474d; font-size: .92rem; line-height: 1.9; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; }
+.content-card__meta { display: flex; flex-wrap: wrap; gap: .15rem .9rem; margin: 0; padding: 0; list-style: none; color: var(--content-muted); font-size: .82rem; }
+.content-card__action { display: inline-flex; align-items: center; gap: .4rem; margin-block-start: auto; padding-block-start: .6rem; color: var(--ref-navy); font-size: .9rem; font-weight: 700; }
+.content-card__action svg { transition: transform .2s ease; }
+.content-card:hover .content-card__action svg { transform: translateX(-4px); }
+
+/* Cover: one ratio everywhere, so a row of mixed content lines up and the page does not jump while pictures load. */
+.content-cover { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: var(--ref-navy); }
+.content-cover img { display: block; inline-size: 100%; block-size: 100%; object-fit: cover; transition: transform .5s ease; }
+.content-card:hover .content-cover img { transform: scale(1.03); }
+.content-cover--book:not(.content-cover--empty) { background: var(--parchment); }
+.content-cover--book:not(.content-cover--empty) img { object-fit: contain; padding: .75rem; }
+.content-cover__fallback { position: absolute; inset: 0; display: grid; place-items: center; color: #d9bd83; background: var(--ref-navy) var(--content-star) center / 64px 64px; }
+.content-cover__fallback::before { content: ''; position: absolute; inset: .6rem; border: 1px solid rgb(217 189 131 / 35%); border-radius: 6px; }
+.content-cover__fallback svg { position: relative; padding: .9rem; box-sizing: content-box; border-radius: 50%; background: var(--ref-navy); box-shadow: 0 0 0 1px rgb(217 189 131 / 45%); }
+
+/* ---------- Homepage latest publications: the carousel shows the same card ---------- */
+.latest-carousel__track > li { display: flex; }
+
+/* ---------- Home video band (navy section) ---------- */
+.youtube-band .content-cover { aspect-ratio: 16 / 9; border: 1px solid rgb(255 255 255 / 30%); border-radius: 8px; }
+.youtube-band__card strong { color: #fff; line-height: 1.7; }
+
+/* ---------- Article detail ---------- */
+.detail-eyebrow { margin: 0 0 .35rem; color: var(--content-type); font-size: .95rem; font-weight: 700; }
+.detail-cover { max-inline-size: 62rem; margin: 0 0 1.75rem; overflow: hidden; aspect-ratio: 16 / 9; background: var(--ref-navy); border: 1px solid var(--content-line); border-radius: 12px; }
+.detail-cover img { display: block; inline-size: 100%; block-size: 100%; object-fit: cover; }
+.related-content .content-grid { margin-block-end: 1.25rem; }
+
+/* The rich-text body. Quill writes alignment, direction and indent as classes; everything else is plain semantic HTML. */
+.article-prose { overflow-wrap: anywhere; }
+.article-prose > :first-child { margin-block-start: 0; }
+.article-prose > :last-child { margin-block-end: 0; }
+.article-prose p { margin: 0 0 1.4rem; }
+.article-prose :is(h2, h3, h4) { color: var(--ref-navy); font-family: var(--font-library); text-wrap: balance; scroll-margin-block-start: calc(var(--fixed-header-height, 104px) + 1rem); }
+.article-prose h2 { margin: 2.6rem 0 1rem; padding-block-end: .5rem; border-block-end: 1px solid rgb(167 124 50 / 45%); font-size: 1.55em; line-height: 1.5; }
+.article-prose h3 { margin: 2.1rem 0 .75rem; font-size: 1.3em; line-height: 1.55; }
+.article-prose h4 { margin: 1.7rem 0 .6rem; color: #2a3b44; font-size: 1.1em; line-height: 1.6; }
+.article-prose :is(ul, ol) { margin: 0 0 1.4rem; padding-inline: 1.7rem 0; }
+.article-prose ul { list-style: disc; }
+.article-prose ol { list-style: decimal; }
+.article-prose li { margin-block-end: .5rem; padding-inline-start: .35rem; }
+.article-prose li > :is(ul, ol) { margin-block: .5rem 0; }
+.article-prose blockquote { margin: 2rem 0; padding: 1.1rem 1.5rem; background: #f3f6f7; border-inline-start: 4px solid var(--brass); color: var(--ref-navy); font-size: 1.08em; line-height: 1.95; }
+.article-prose blockquote p:last-child { margin-block-end: 0; }
+.article-prose a { color: #17506f; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .22em; overflow-wrap: anywhere; }
+.article-prose a:hover { text-decoration-thickness: 2px; }
+.article-prose a:focus-visible { outline: 3px solid var(--ref-navy); outline-offset: 2px; border-radius: 2px; }
+.article-prose img { display: block; max-inline-size: 100%; block-size: auto; margin: 1.8rem auto; border-radius: 8px; }
+.article-prose .ql-align-center { text-align: center; }
+.article-prose .ql-align-justify { text-align: justify; }
+.article-prose .ql-align-right { text-align: right; }
+.article-prose .ql-direction-rtl { direction: rtl; }
+.article-prose .ql-direction-ltr { direction: ltr; text-align: start; }
+.article-prose .ql-indent-1 { margin-inline-start: 2em; }
+.article-prose .ql-indent-2 { margin-inline-start: 4em; }
+.article-prose .ql-indent-3 { margin-inline-start: 6em; }
+.article-prose .ql-indent-4 { margin-inline-start: 8em; }
+.article-prose .ql-indent-5 { margin-inline-start: 10em; }
+.article-prose .ql-indent-6 { margin-inline-start: 12em; }
+.article-prose .ql-indent-7 { margin-inline-start: 14em; }
+.article-prose .ql-indent-8 { margin-inline-start: 16em; }
+
+/* ---------- Video player ---------- */
+.media-availability__player { grid-column: 1 / -1; }
+.video-player__frame { position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: #0b1820; border-radius: 10px; }
+.video-player__frame :is(iframe, video) { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; border: 0; background: #000; }
+.video-player__status { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; color: #fff; background: rgb(11 24 32 / 60%); pointer-events: none; }
+.video-player__problem { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: .75rem; padding: 1.5rem; color: #fff; text-align: center; background: var(--ref-navy); }
+.video-player__problem p { max-inline-size: 28rem; margin: 0; line-height: 1.9; }
+.video-player__problem .button-primary, .video-player__actions .button-primary { display: inline-flex; align-items: center; gap: .5rem; min-height: 44px; padding-inline: 1.25rem; text-decoration: none; }
+.video-player__actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-block-start: .9rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .content-card, .content-cover img, .content-card__action svg { transition: none; }
+  .content-card:hover, .content-card:hover .content-cover img, .content-card:hover .content-card__action svg { transform: none; }
+}
+@media (max-width: 600px) {
+  .content-grid { gap: 1rem; }
+  .article-prose h2 { font-size: 1.4em; }
+}

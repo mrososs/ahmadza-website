@@ -3,9 +3,9 @@ import { contentTypes, type ContentType, type PublishStatus } from '~/types/cont
 import type { AdminCategory, AdminContentFilter, AdminContentRecord, AdminContentSummary, AdminProfile, AdminStats, ContentDraft } from '~/types/admin'
 import { publishStatuses } from '~/types/admin'
 import type { BrandingImage, BrandingSlot, PreparedBrandingImage, SiteBranding } from '~/types/branding'
-import { cleanSections, itemToDraftFields } from '~/utils/admin-content'
+import { bodyToDraftHtml, itemToDraftFields } from '~/utils/admin-content'
 import { defaultSiteBranding } from '~/utils/branding'
-import { AdminError, type AdminAuth, type AdminBackend, type AdminRepository, type CategoryInput } from '~/repositories/admin/admin-repository'
+import { AdminError, type AdminAuth, type AdminBackend, type AdminRepository, type CategoryInput, type VideoUpload } from '~/repositories/admin/admin-repository'
 
 /** Development-only sandbox: in-memory, resets on reload, and never reachable in production builds. */
 const demoProfile: AdminProfile = { userId: 'demo-admin', email: 'demo@example.invalid', displayName: 'مدير تجريبي', role: 'owner' }
@@ -38,7 +38,7 @@ class DemoAdminRepository implements AdminRepository {
         slug: item.slug,
         title: item.title,
         excerpt: item.excerpt,
-        sections: item.sections.map(section => ({ ...section, heading: section.heading ?? '', paragraphs: [...section.paragraphs] })),
+        bodyHtml: bodyToDraftHtml(item.sections),
         status: item.status,
         publishedAt: item.publishedAt.slice(0, 16),
         scheduledAt: '',
@@ -88,7 +88,7 @@ class DemoAdminRepository implements AdminRepository {
     if (clash) throw new AdminError('الرابط المختصر مستخدم من قبل، اختر رابطًا آخر.')
     const key = id ?? crypto.randomUUID()
     const publishedAt = draft.status === 'published' && !draft.publishedAt ? new Date().toISOString().slice(0, 16) : draft.publishedAt
-    this.records.set(key, { ...JSON.parse(JSON.stringify(draft)) as ContentDraft, sections: cleanSections(draft.sections), publishedAt, id: key, updatedAt: new Date().toISOString() })
+    this.records.set(key, { ...JSON.parse(JSON.stringify(draft)) as ContentDraft, publishedAt, id: key, updatedAt: new Date().toISOString() })
     return key
   }
 
@@ -99,6 +99,16 @@ class DemoAdminRepository implements AdminRepository {
   async uploadMedia(): Promise<string> {
     throw new AdminError('رفع الملفات غير متاح في النسخة التجريبية.')
   }
+
+  uploadVideo(): VideoUpload {
+    return { result: Promise.reject(new AdminError('رفع الفيديو غير متاح في النسخة التجريبية.')), abort: () => undefined }
+  }
+
+  async previewVideoUrl(): Promise<string> {
+    throw new AdminError('معاينة الفيديو المرفوع غير متاحة في النسخة التجريبية.')
+  }
+
+  async removeVideoFile() { /* the sandbox stores no files */ }
 
   async listCategories() {
     return [...this.categories.values()].toSorted((left, right) => left.sortOrder - right.sortOrder)

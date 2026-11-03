@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { Upload } from 'tus-js-client'
 import { z } from 'zod'
 import { contentTypes, type ContentType, type PublishStatus } from '~/types/content'
 import type {
@@ -15,8 +16,11 @@ import type { BrandingImage, BrandingSlot, PreparedBrandingImage, SiteBranding }
 import { brandingBucket, brandingExtension, brandingSettingKeys, brandingSpecs, brandingStorageBase, defaultSiteBranding, validateBrandingFile } from '~/utils/branding'
 import { parseBrandingRows } from '~/utils/branding-rows'
 import { mediaExtension, mediaSpecs, validateMediaFile, type MediaKind } from '~/utils/media-upload'
-import { cleanSections,draftToMetadata, isoToLocalInput, localInputToIso, metadataToDraftFields } from '~/utils/admin-content'
-import { AdminError, type AdminAuth, type AdminBackend, type AdminRepository, type CategoryInput } from '~/repositories/admin/admin-repository'
+import { bodyToDraftHtml, draftToBody, draftToMetadata, isoToLocalInput, localInputToIso, metadataToDraftFields } from '~/utils/admin-content'
+import { sanitizeRichTextInBrowser } from '~/utils/rich-text-client'
+import { parseVideoMetadata } from '~/utils/video-metadata'
+import { defaultVideoMaxMb, isVideoPath, validateVideoFile, videoBucket, videoExtension, videoFolder } from '~/utils/video-upload'
+import { AdminError, type AdminAuth, type AdminBackend, type AdminRepository, type CategoryInput, type VideoUpload } from '~/repositories/admin/admin-repository'
 
 const statusSchema = z.enum(publishStatuses)
 const typeSchema = z.enum(contentTypes)
@@ -37,6 +41,7 @@ const sectionSchema = z.object({
   heading: z.string().optional(),
   paragraphs: z.array(z.string()).default([]),
   quote: z.string().optional(),
+  html: z.string().optional(),
 })
 
 const recordRowSchema = summaryRowSchema.extend({
@@ -102,6 +107,18 @@ function sendWithProgress(url: string, headers: Record<string, string>, body: Fo
     request.onerror = () => resolve(0)
     request.send(body)
   })
+}
+
+/** Maps a failed resumable upload to an editor-readable message. */
+function videoUploadFailure(error: unknown): AdminError {
+  const status = typeof error === 'object' && error !== null && 'originalResponse' in error
+    ? (error as { originalResponse?: { getStatus(): number } | null }).originalResponse?.getStatus()
+    : undefined
+  if (status === 413) return new AdminError('حجم الفيديو أكبر من الحد المسموح به في الخادم.')
+  if (status === 401 || status === 403) return new AdminError('ليست لديك صلاحية رفع الفيديو. سجّل الدخول من جديد.')
+  if (status === 415) return new AdminError('صيغة الفيديو غير مقبولة في الخادم.')
+  console.error('[admin] video upload failed', status ?? 'network', error instanceof Error ? error.message : '')
+  return new AdminError('انقطع رفع الفيديو. تحقق من الاتصال ثم اضغط «إعادة المحاولة» لمتابعة الرفع.')
 }
 
 class SupabaseAdminAuth implements AdminAuth {
@@ -184,7 +201,12 @@ class SupabaseAdminAuth implements AdminAuth {
 
 class SupabaseAdminRepository implements AdminRepository {
   readonly source = 'supabase'
-  constructor(private readonly client: SupabaseClient, private readonly url: string, private readonly publishableKey: string) {}
+  constructor(private readonly client: SupabaseClient, private readonly url: string, private readonly publishableKey: string, private readonly videoMaxMb: number) {}
+
+  /** Public object URLs an article image may use; the same prefix the server sanitizer allows. */
+  private get imagePrefixes(): string[] {
+    return [`${this.url.replace(/\/$/, '')}/storage/v1/object/public/${MEDIA_BUCKET}/`]
+  }
 
   private async currentUserId(): Promise<string> {
     const { data } = await this.client.auth.getUser()
@@ -235,12 +257,13 @@ class SupabaseAdminRepository implements AdminRepository {
       slug: row.slug,
       title: row.title,
       excerpt: row.excerpt,
-      sections: row.body.map(section => ({
+      bodyHtml: bodyToDraftHtml(row.body.map(section => ({
         id: section.id ?? crypto.randomUUID(),
-        heading: section.heading ?? '',
-        paragraphs: section.paragraphs.length ? section.paragraphs : [''],
+        paragraphs: section.paragraphs,
+        ...(section.heading ? { heading: section.heading } : {}),
         ...(section.quote ? { quote: section.quote } : {}),
-      })),
+        ...(section.html === undefined ? {} : { html: section.html }),
+      }))),
       status: row.status,
       publishedAt: isoToLocalInput(row.published_at),
       scheduledAt: isoToLocalInput(row.scheduled_at),
@@ -253,22 +276,32 @@ class SupabaseAdminRepository implements AdminRepository {
     }
   }
 
+  /** The uploaded video a saved record currently points at, so a replaced or removed file can be cleaned up after a successful save. */
+  private async storedVideoPath(id: string): Promise<string | undefined> {
+    const { data } = await this.client.from('content_items').select('metadata').eq('id', id).maybeSingle()
+    const metadata = (data as { metadata?: unknown } | null)?.metadata
+    return typeof metadata === 'object' && metadata !== null ? parseVideoMetadata(metadata as Record<string, unknown>).videoPath : undefined
+  }
+
   async saveContent(draft: ContentDraft, id?: string): Promise<string> {
     const userId = await this.currentUserId()
+    const previousVideoPath = id ? await this.storedVideoPath(id) : undefined
+    const metadata = draftToMetadata(draft)
     const published = draft.status === 'published'
     const row = {
       type: draft.type,
       slug: draft.slug.trim(),
       title: draft.title.trim(),
       excerpt: draft.excerpt.trim(),
-      body: cleanSections(draft.sections),
+      // The editor already restricts formatting; this makes the stored HTML match the allow-list the public site enforces.
+      body: draftToBody(sanitizeRichTextInBrowser(draft.bodyHtml, this.imagePrefixes)),
       status: draft.status,
       // The database requires a publish time for published rows; a future time keeps the row hidden until then.
       published_at: published ? (localInputToIso(draft.publishedAt) ?? new Date().toISOString()) : localInputToIso(draft.publishedAt),
       scheduled_at: draft.status === 'scheduled' ? localInputToIso(draft.scheduledAt) : null,
       featured: draft.featured,
       reading_minutes: draft.readingMinutes.trim() ? Number(draft.readingMinutes) : null,
-      metadata: draftToMetadata(draft),
+      metadata,
       seo_title: draft.seoTitle.trim() || null,
       seo_description: draft.seoDescription.trim() || null,
       updated_by: userId,
@@ -282,6 +315,9 @@ class SupabaseAdminRepository implements AdminRepository {
 
     const contentId = z.object({ id: z.string() }).parse(saved.data).id
     await this.syncCategories(contentId, draft.categoryIds)
+    // The record no longer points at the old file, so nothing else can be using it.
+    const nextVideoPath = typeof metadata.videoPath === 'string' ? metadata.videoPath : undefined
+    if (previousVideoPath && previousVideoPath !== nextVideoPath) await this.removeVideoFile(previousVideoPath)
     return contentId
   }
 
@@ -305,8 +341,10 @@ class SupabaseAdminRepository implements AdminRepository {
   }
 
   async deleteContent(id: string): Promise<void> {
+    const videoPath = await this.storedVideoPath(id)
     const { error } = await this.client.from('content_items').delete().eq('id', id)
     if (error) throw failure(error, 'تعذر حذف المادة.')
+    if (videoPath) await this.removeVideoFile(videoPath)
   }
 
   /** Uploads to a public bucket with the editor's session and returns the object's public URL. */
@@ -336,6 +374,77 @@ class SupabaseAdminRepository implements AdminRepository {
 
     // A random name avoids collisions and keeps Arabic file names out of the public URL.
     return this.putObject(MEDIA_BUCKET, `${mediaSpecs[kind].folder}/${crypto.randomUUID()}.${extension}`, file, onProgress)
+  }
+
+  uploadVideo(file: File, onProgress?: (percent: number) => void): VideoUpload {
+    const problem = validateVideoFile(file, this.videoMaxMb)
+    const extension = videoExtension(file.type)
+    if (problem || !extension) return { result: Promise.reject(new AdminError(problem ?? 'صيغة الفيديو غير مدعومة.')), abort: () => undefined }
+
+    let upload: Upload | undefined
+    let cancelled = false
+    const result = (async () => {
+      const { data } = await this.client.auth.getSession()
+      if (!data.session) throw new AdminError('انتهت الجلسة. سجّل الدخول من جديد.')
+
+      // A random name keeps Arabic file names out of storage and means an upload can never overwrite another video.
+      let path = `${videoFolder}/${crypto.randomUUID()}.${extension}`
+      const tus = new Upload(file, {
+        // Supabase Storage's resumable (TUS) endpoint; chunks must be exactly 6 MB.
+        endpoint: `${this.url}/storage/v1/upload/resumable`,
+        chunkSize: 6 * 1024 * 1024,
+        retryDelays: [0, 3000, 5000, 10000, 20000],
+        headers: { apikey: this.publishableKey },
+        uploadDataDuringCreation: true,
+        removeFingerprintOnSuccess: true,
+        metadata: { bucketName: videoBucket, objectName: path, contentType: file.type, cacheControl: '3600' },
+        // Long uploads outlive one access token, so every request carries the session's current one.
+        onBeforeRequest: async (request) => {
+          const { data: current } = await this.client.auth.getSession()
+          if (current.session) request.setHeader('Authorization', `Bearer ${current.session.access_token}`)
+        },
+        onProgress: (sent, total) => onProgress?.(Math.min(100, Math.round((sent / total) * 100))),
+      })
+      upload = tus
+
+      // Picking the same file again after a dropped connection continues the earlier upload instead of starting over.
+      const previous = (await tus.findPreviousUploads())[0]
+      const previousPath = previous?.metadata.objectName
+      if (previous && isVideoPath(previousPath)) {
+        path = previousPath
+        tus.resumeFromPreviousUpload(previous)
+      }
+      if (cancelled) throw new AdminError('أُلغي رفع الفيديو.')
+
+      await new Promise<void>((resolve, reject) => {
+        tus.options.onSuccess = () => resolve()
+        tus.options.onError = error => reject(cancelled ? new AdminError('أُلغي رفع الفيديو.') : videoUploadFailure(error))
+        tus.start()
+      })
+      return { path, mimeType: file.type, bytes: file.size }
+    })()
+
+    return {
+      result,
+      abort: () => {
+        cancelled = true
+        // Terminating also deletes the partial object on the server.
+        void upload?.abort(true).catch(() => undefined)
+      },
+    }
+  }
+
+  async previewVideoUrl(path: string): Promise<string> {
+    if (!isVideoPath(path)) throw new AdminError('ملف الفيديو غير صالح.')
+    const { data, error } = await this.client.storage.from(videoBucket).createSignedUrl(path, 60 * 60)
+    if (error || !data) throw new AdminError('تعذر تحميل معاينة الفيديو.')
+    return data.signedUrl
+  }
+
+  async removeVideoFile(path: string): Promise<void> {
+    if (!isVideoPath(path)) return
+    const { error } = await this.client.storage.from(videoBucket).remove([path])
+    if (error) console.error('[admin] could not remove an unused video file', path)
   }
 
   async getSiteBranding(): Promise<SiteBranding> {
@@ -390,8 +499,8 @@ class SupabaseAdminRepository implements AdminRepository {
   }
 }
 
-export function createSupabaseAdminBackend(url: string, publishableKey: string): AdminBackend {
+export function createSupabaseAdminBackend(url: string, publishableKey: string, videoMaxMb: number = defaultVideoMaxMb): AdminBackend {
   // Unlike the public repository this client keeps the editor's session so RLS sees `auth.uid()`.
   const client = createClient(url, publishableKey, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, flowType: 'pkce' } })
-  return { auth: new SupabaseAdminAuth(client), repository: new SupabaseAdminRepository(client, url, publishableKey) }
+  return { auth: new SupabaseAdminAuth(client), repository: new SupabaseAdminRepository(client, url, publishableKey, videoMaxMb) }
 }

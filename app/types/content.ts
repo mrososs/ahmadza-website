@@ -14,6 +14,11 @@ export interface ContentSection {
   heading?: string
   paragraphs: string[]
   quote?: string
+  /**
+   * Formatted body written in the rich editor. Public pages only ever receive it after server-side sanitizing.
+   * Sections written before the editor existed have no `html` and keep using heading, paragraphs and quote.
+   */
+  html?: string
 }
 
 interface ContentBase {
@@ -29,6 +34,8 @@ interface ContentBase {
   sections: ContentSection[]
   featured: boolean
   readingMinutes?: number
+  /** Cover image (article, benefit, …), book cover, or video poster. Items without one show a local fallback. */
+  coverUrl?: string
   seoTitle?: string
   seoDescription?: string
 }
@@ -52,7 +59,6 @@ export interface BookContent extends ContentBase {
   publicationYear?: number
   pageCount?: number
   pdfUrl?: string
-  coverUrl?: string
   /** When true the book page also offers the PDF as a download. Off by default: books are read on the site. */
   downloadAllowed: boolean
 }
@@ -63,11 +69,26 @@ export interface AudioContent extends ContentBase {
   durationSeconds?: number
 }
 
+/** Where a video plays from. A record with neither source is a listing that has no playable file yet. */
+export type VideoSource = 'youtube' | 'upload'
+
+export interface UploadedVideoInfo {
+  mimeType: string
+  bytes?: number
+}
+
 export interface VideoContent extends ContentBase {
   type: 'video'
   youtubeId?: string
+  /** Present when a file was uploaded to private storage. The storage path itself never leaves the server. */
+  uploadedVideo?: UploadedVideoInfo
+  /** Uploaded files only: offers a Download action on the video page. YouTube videos are never downloadable here. */
+  downloadAllowed: boolean
   durationSeconds?: number
 }
+
+export const videoSourceOf = (video: Pick<VideoContent, 'youtubeId' | 'uploadedVideo'>): VideoSource | undefined =>
+  video.uploadedVideo ? 'upload' : video.youtubeId ? 'youtube' : undefined
 
 export type ContentItem =
   | ArticleContent
@@ -126,3 +147,10 @@ export const contentTypeRoutes: Record<ContentType, string> = {
   video: '/videos',
   benefit: '/benefits',
 }
+
+export type VideoAccessMode = 'play' | 'download'
+
+export type VideoAccessResult =
+  | { status: 'ok'; url: string; expiresInSeconds: number }
+  | { status: 'not-found' }
+  | { status: 'download-disabled' }

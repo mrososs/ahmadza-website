@@ -1,9 +1,15 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { ContentRepository } from '~/repositories/content-repository'
 import type { SiteBrandingResult } from '~/types/branding'
-import type { ContentDetailResult, ContentItem, ContentListResult, ContentQuery, ContentType } from '~/types/content'
+import type { ContentDetailResult, ContentItem, ContentListResult, ContentQuery, ContentType, VideoAccessMode, VideoAccessResult } from '~/types/content'
 import { brandingSettingKeys, brandingStorageBase } from '~/utils/branding'
 import { parseBrandingRows } from '~/utils/branding-rows'
+import { parseVideoMetadata } from '~/utils/video-metadata'
+import { videoBucket } from '~/utils/video-upload'
+
+/** Playback URLs outlive a long video; download URLs only need to survive the redirect. */
+const PLAYBACK_SECONDS = 2 * 60 * 60
+const DOWNLOAD_SECONDS = 60
 
 interface ContentRow {
   id: string
@@ -35,6 +41,7 @@ function mapRow(row: ContentRow): ContentItem {
     categories: row.content_categories.flatMap(item => item.categories ? [item.categories] : []),
     sections: row.body,
     featured: row.featured,
+    ...(typeof row.metadata.coverUrl === 'string' && row.metadata.coverUrl ? { coverUrl: row.metadata.coverUrl } : {}),
     ...(row.reading_minutes === null ? {} : { readingMinutes: row.reading_minutes }),
     ...(row.seo_title === null ? {} : { seoTitle: row.seo_title }),
     ...(row.seo_description === null ? {} : { seoDescription: row.seo_description }),
@@ -59,7 +66,6 @@ function mapRow(row: ContentRow): ContentItem {
         ...(typeof row.metadata.publicationYear === 'number' ? { publicationYear: row.metadata.publicationYear } : {}),
         ...(typeof row.metadata.pageCount === 'number' ? { pageCount: row.metadata.pageCount } : {}),
         ...(typeof row.metadata.pdfUrl === 'string' ? { pdfUrl: row.metadata.pdfUrl } : {}),
-        ...(typeof row.metadata.coverUrl === 'string' ? { coverUrl: row.metadata.coverUrl } : {}),
         downloadAllowed: row.metadata.downloadAllowed === true,
       }
     case 'audio':
@@ -69,13 +75,17 @@ function mapRow(row: ContentRow): ContentItem {
         ...(typeof row.metadata.audioUrl === 'string' ? { audioUrl: row.metadata.audioUrl } : {}),
         ...(typeof row.metadata.durationSeconds === 'number' ? { durationSeconds: row.metadata.durationSeconds } : {}),
       }
-    case 'video':
+    case 'video': {
+      const video = parseVideoMetadata(row.metadata)
       return {
         ...common,
         type: 'video',
-        ...(typeof row.metadata.youtubeId === 'string' ? { youtubeId: row.metadata.youtubeId } : {}),
-        ...(typeof row.metadata.durationSeconds === 'number' ? { durationSeconds: row.metadata.durationSeconds } : {}),
+        ...(video.youtubeId ? { youtubeId: video.youtubeId } : {}),
+        ...(video.uploadedVideo ? { uploadedVideo: video.uploadedVideo } : {}),
+        downloadAllowed: Boolean(video.uploadedVideo) && video.downloadAllowed,
+        ...(video.durationSeconds === undefined ? {} : { durationSeconds: video.durationSeconds }),
       }
+    }
   }
 }
 
@@ -124,6 +134,32 @@ export class SupabaseContentRepository implements ContentRepository {
     const item = mapRow(data as unknown as ContentRow)
     const relatedResult = await this.list({ type, limit: 4 })
     return { item, related: relatedResult.items.filter(entry => entry.id !== item.id).slice(0, 3), source: 'supabase' }
+  }
+
+  async getVideoAccess(slug: string, mode: VideoAccessMode): Promise<VideoAccessResult> {
+    // Anonymous read: RLS only returns a published video. The same policy lets the anonymous role sign that one file.
+    const { data, error } = await this.client
+      .from('content_items')
+      .select('slug, metadata')
+      .eq('status', 'published')
+      .eq('type', 'video')
+      .eq('slug', slug)
+      .maybeSingle()
+    if (error) throw new Error(`Supabase video lookup failed: ${error.message}`)
+    if (!data) return { status: 'not-found' }
+
+    const video = parseVideoMetadata(data.metadata as Record<string, unknown>)
+    if (!video.videoPath) return { status: 'not-found' }
+    // The download policy lives here, on the server's own endpoint, not only in the hidden button.
+    if (mode === 'download' && !video.downloadAllowed) return { status: 'download-disabled' }
+
+    const expiresInSeconds = mode === 'download' ? DOWNLOAD_SECONDS : PLAYBACK_SECONDS
+    const extension = video.videoPath.split('.').pop() ?? 'mp4'
+    const { data: signed, error: signError } = await this.client.storage
+      .from(videoBucket)
+      .createSignedUrl(video.videoPath, expiresInSeconds, mode === 'download' ? { download: `${slug}.${extension}` } : undefined)
+    if (signError || !signed) throw new Error(`Supabase video signing failed: ${signError?.message ?? 'no URL'}`)
+    return { status: 'ok', url: signed.signedUrl, expiresInSeconds }
   }
 
   async getBranding(): Promise<SiteBrandingResult> {
