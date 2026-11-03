@@ -11,60 +11,60 @@ import { validateVideoFile } from '../app/utils/video-upload'
 
 const storage = ['https://proj.supabase.co/storage/v1/object/public/publications/']
 // The sanitizer lives in Nitro's server utils (Nuxt aliases, Node-only dependency), so it is bundled once and loaded as plain CommonJS.
-let clean: (html: string) => string
+let clean: (html: string) => Promise<string>
 test.beforeAll(() => {
   const outfile = join(mkdtempSync(join(tmpdir(), 'sanitizer-')), 'rich-text.cjs')
   buildSync({ entryPoints: [resolve(process.cwd(), 'server/utils/rich-text.ts')], bundle: true, platform: 'node', format: 'cjs', outfile, alias: { '~': resolve(process.cwd(), 'app') }, logLevel: 'silent' })
-  const { sanitizeRichText } = createRequire(outfile)(outfile) as { sanitizeRichText: (html: string, prefixes: readonly string[]) => string }
+  const { sanitizeRichText } = createRequire(outfile)(outfile) as { sanitizeRichText: (html: string, prefixes: readonly string[]) => Promise<string> }
   clean = html => sanitizeRichText(html, storage)
 })
 
 test.describe('sanitizer (server boundary for article bodies)', () => {
-  test('keeps the formatting the editor produces', () => {
+  test('keeps the formatting the editor produces', async () => {
     const html = '<h2>عنوان</h2><p class="ql-align-center ql-direction-rtl">نص <strong>عريض</strong> <em>مائل</em> <u>مسطر</u></p><ul><li>أ</li></ul><ol><li>ب</li></ol><blockquote>اقتباس</blockquote>'
-    const out = clean(html)
+    const out = await clean(html)
     expect(out).toContain('<h2 id="h-1">عنوان</h2>')
     expect(out).toContain('class="ql-align-center ql-direction-rtl"')
     for (const fragment of ['<strong>', '<em>', '<u>', '<ul>', '<ol>', '<blockquote>']) expect(out).toContain(fragment)
   })
 
-  test('removes scripts, event handlers, iframes and styles', () => {
-    const out = clean('<p onclick="x()" style="color:red">a</p><script>alert(1)</script><iframe src="https://evil.test"></iframe><img src="x" onerror="alert(1)"><svg onload="alert(1)"></svg><form><input></form>')
+  test('removes scripts, event handlers, iframes and styles', async () => {
+    const out = await clean('<p onclick="x()" style="color:red">a</p><script>alert(1)</script><iframe src="https://evil.test"></iframe><img src="x" onerror="alert(1)"><svg onload="alert(1)"></svg><form><input></form>')
     expect(out).not.toMatch(/script|onclick|onerror|onload|iframe|style=|<svg|<form|<input/i)
     expect(out).toContain('<p>a</p>')
   })
 
-  test('neutralises malicious links and adds safe rel/target to external ones', () => {
-    expect(clean('<a href="javascript:alert(1)">x</a>')).not.toContain('javascript')
-    expect(clean('<a href="JaVaScRiPt:alert(1)">x</a>')).not.toContain('href')
-    expect(clean('<a href="data:text/html,<script>alert(1)</script>">x</a>')).not.toContain('data:')
-    expect(clean('<a href="//evil.test">x</a>')).not.toContain('evil')
-    const external = clean('<a href="https://example.com/a">x</a>')
+  test('neutralises malicious links and adds safe rel/target to external ones', async () => {
+    expect(await clean('<a href="javascript:alert(1)">x</a>')).not.toContain('javascript')
+    expect(await clean('<a href="JaVaScRiPt:alert(1)">x</a>')).not.toContain('href')
+    expect(await clean('<a href="data:text/html,<script>alert(1)</script>">x</a>')).not.toContain('data:')
+    expect(await clean('<a href="//evil.test">x</a>')).not.toContain('evil')
+    const external = await clean('<a href="https://example.com/a">x</a>')
     expect(external).toContain('rel="noopener noreferrer nofollow"')
     expect(external).toContain('target="_blank"')
-    expect(clean('<a href="mailto:a@b.co">x</a>')).toContain('mailto:a@b.co')
+    expect(await clean('<a href="mailto:a@b.co">x</a>')).toContain('mailto:a@b.co')
   })
 
-  test('only images from the site storage survive; data, blob and third-party images are dropped', () => {
-    expect(clean('<img src="data:image/png;base64,AAAA">')).toBe('')
-    expect(clean('<img src="blob:https://x/1">')).toBe('')
-    expect(clean('<img src="https://tracker.test/p.png">')).toBe('')
-    expect(clean('<img src="javascript:alert(1)">')).toBe('')
-    const ok = clean(`<img src="${storage[0]}covers/a.png" alt="وصف" width="100" height="50" onerror="x()">`)
+  test('only images from the site storage survive; data, blob and third-party images are dropped', async () => {
+    expect(await clean('<img src="data:image/png;base64,AAAA">')).toBe('')
+    expect(await clean('<img src="blob:https://x/1">')).toBe('')
+    expect(await clean('<img src="https://tracker.test/p.png">')).toBe('')
+    expect(await clean('<img src="javascript:alert(1)">')).toBe('')
+    const ok = await clean(`<img src="${storage[0]}covers/a.png" alt="وصف" width="100" height="50" onerror="x()">`)
     expect(ok).toContain(`src="${storage[0]}covers/a.png"`)
     expect(ok).toContain('alt="وصف"')
     expect(ok).not.toContain('onerror')
   })
 
-  test('drops unknown classes and the heading ids an editor tries to set', () => {
-    const out = clean('<p class="evil ql-indent-2 ql-align-right">a</p><h3 id="x" class="boom">b</h3>')
+  test('drops unknown classes and the heading ids an editor tries to set', async () => {
+    const out = await clean('<p class="evil ql-indent-2 ql-align-right">a</p><h3 id="x" class="boom">b</h3>')
     expect(out).toContain('class="ql-indent-2 ql-align-right"')
     expect(out).not.toContain('evil')
     expect(out).toContain('<h3 id="h-1">b</h3>')
   })
 
-  test('maps unsupported tags to text instead of keeping them', () => {
-    expect(clean('<h1>a</h1><table><tr><td>b</td></tr></table>')).not.toMatch(/<h1|<table|<td/)
+  test('maps unsupported tags to text instead of keeping them', async () => {
+    expect(await clean('<h1>a</h1><table><tr><td>b</td></tr></table>')).not.toMatch(/<h1|<table|<td/)
   })
 })
 

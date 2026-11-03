@@ -1,6 +1,25 @@
-import sanitizeHtml from 'sanitize-html'
 import { isSafeDimension, isSafeImage, isSafeLink, richTextClassPattern, richTextTags } from '~/utils/rich-text-policy'
 import type { ContentItem, ContentSection } from '~/types/content'
+import { richTextToPlain } from '~/utils/rich-text'
+
+type SanitizeHtml = typeof import('sanitize-html')
+
+// Loaded on first use, so a problem loading the library can never take down routes that only list content.
+let sanitizerLoad: Promise<SanitizeHtml | undefined> | undefined
+function loadSanitizer(): Promise<SanitizeHtml | undefined> {
+  sanitizerLoad ??= import('sanitize-html').then(module => module.default).catch((cause) => {
+    console.error('[content] sanitize-html could not be loaded; rich text is shown as plain text', cause)
+    return undefined
+  })
+  return sanitizerLoad
+}
+
+const escapeText = (value: string) => value.replace(/[&<>"']/g, character => `&#${character.charCodeAt(0)};`)
+
+/** Fail-closed fallback: every tag is dropped and the text is shown as escaped paragraphs. */
+function plainParagraphs(html: string): string {
+  return richTextToPlain(html) ? `<p>${escapeText(richTextToPlain(html))}</p>` : ''
+}
 
 /** Public object URLs the editor may embed. Anything else (other hosts, data:, blob:) is dropped from the page. */
 function imagePrefixes(): string[] {
@@ -10,7 +29,9 @@ function imagePrefixes(): string[] {
 }
 
 /** The security boundary for article bodies: stored HTML is rewritten against an allow-list on every public read. */
-export function sanitizeRichText(html: string, prefixes: readonly string[] = imagePrefixes(), idPrefix = 'h'): string {
+export async function sanitizeRichText(html: string, prefixes: readonly string[] = imagePrefixes(), idPrefix = 'h'): Promise<string> {
+  const sanitizeHtml = await loadSanitizer()
+  if (!sanitizeHtml) return plainParagraphs(html)
   let headingCount = 0
   const numberHeading = (tagName: string, attribs: Record<string, string>) => ({ tagName, attribs: { ...attribs, id: `${idPrefix}-${++headingCount}` } })
 
@@ -59,8 +80,8 @@ export function sanitizeRichText(html: string, prefixes: readonly string[] = ima
 }
 
 /** A copy of the item that is safe to send to browsers: rich sections are sanitized, plain-text sections are untouched. */
-export function withSafeBody<T extends ContentItem>(item: T): T {
-  const sections = item.sections.map((section, index): ContentSection => section.html === undefined ? section : { ...section, html: sanitizeRichText(section.html, imagePrefixes(), `s${index}`) })
+export async function withSafeBody<T extends ContentItem>(item: T): Promise<T> {
+  const sections = await Promise.all(item.sections.map(async (section, index): Promise<ContentSection> => section.html === undefined ? section : { ...section, html: await sanitizeRichText(section.html, imagePrefixes(), `s${index}`) }))
   return { ...item, sections }
 }
 

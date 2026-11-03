@@ -67,6 +67,9 @@ export default defineNuxtConfig({
     // after an editor published, and editors expect to see their change as soon as they open the site.
   },
   nitro: {
+    // sanitize-html (and its parser/postcss dependencies) is CommonJS; bundling it into the server build instead of tracing it
+    // keeps the serverless function from failing to load it, which took every content API route down.
+    externals: { inline: ['sanitize-html'] },
     publicAssets: pdfjsAssets,
     // No crawlLinks: crawling the site navigation froze every content list (and any item that existed at build
     // time) into static HTML, so books published later never appeared. Only truly static routes are prerendered.
