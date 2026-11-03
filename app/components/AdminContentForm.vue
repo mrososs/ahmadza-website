@@ -7,6 +7,13 @@ import { suggestSlug } from '~/utils/admin-content'
 const draft = defineModel<ContentDraft>({ required: true })
 const { categories, errors, saving, isNew } = defineProps<{ categories: AdminCategory[]; errors: FieldErrors; saving: boolean; isNew: boolean }>()
 const emit = defineEmits<{ submit: [] }>()
+// A video upload in progress must finish (or be cancelled) before the record can be saved, so it is never half-attached.
+const videoUploading = shallowRef(false)
+
+const coverLabel = computed(() => ({ book: 'غلاف الكتاب', video: 'صورة الفيديو المصغّرة', article: 'صورة غلاف المقال' } as Partial<Record<ContentDraft['type'], string>>)[draft.value.type] ?? 'صورة الغلاف')
+const coverHint = computed(() => draft.value.type === 'book'
+  ? 'صورة JPG أو PNG أو WEBP حتى 5 ميجابايت، بعرض 320 بكسل على الأقل، ويفضّل أن تكون طولية.'
+  : 'صورة JPG أو PNG أو WEBP حتى 5 ميجابايت، بعرض 320 بكسل على الأقل، ويفضّل أن تكون عريضة بنسبة 16:9. اتركها فارغة لتظهر الصورة الافتراضية.')
 
 // A scheduled row can only be kept, not newly created, since no automatic publisher runs yet.
 const statusOptions = computed(() => draft.value.status === 'scheduled'
@@ -70,7 +77,6 @@ function onTypeChange() {
             </AdminField>
           </div>
           <AdminFileUpload v-model="draft.pdfUrl" kind="pdf" label="ملف الكتاب (PDF)" hint="ملف PDF حتى 50 ميجابايت." :error="errors.pdfUrl" />
-          <AdminFileUpload v-model="draft.coverUrl" kind="image" label="غلاف الكتاب" hint="صورة JPG أو PNG أو WEBP حتى 5 ميجابايت، يفضّل أن تكون طولية." :error="errors.coverUrl" />
           <label class="admin-check"><input v-model="draft.downloadAllowed" type="checkbox"> السماح بتنزيل الكتاب</label>
           <p class="admin-field__hint">عند التفعيل يظهر زر «تنزيل PDF» في صفحة الكتاب إلى جانب القراءة على الموقع. عند الإيقاف يُقرأ الكتاب على الموقع فقط.</p>
         </section>
@@ -87,19 +93,22 @@ function onTypeChange() {
 
         <section v-if="draft.type === 'video'" class="admin-card" aria-labelledby="f-video">
           <h2 id="f-video" class="admin-card__title">بيانات المرئية</h2>
-          <div class="admin-grid-2">
-            <AdminField v-slot="{ id, describedBy, invalid }" label="معرّف فيديو يوتيوب" hint="الرمز المكوّن من 11 حرفًا بعد v= في الرابط." :error="errors.youtubeId">
-              <input :id="id" v-model="draft.youtubeId" dir="ltr" type="text" class="ltr-input" :aria-invalid="invalid" :aria-describedby="describedBy">
-            </AdminField>
-            <AdminField v-slot="{ id, describedBy, invalid }" label="المدة بالثواني" :error="errors.durationSeconds">
-              <input :id="id" v-model="draft.durationSeconds" inputmode="numeric" type="text" :aria-invalid="invalid" :aria-describedby="describedBy">
-            </AdminField>
-          </div>
+          <AdminVideoSource v-model="draft" v-model:uploading="videoUploading" :errors="errors" />
+        </section>
+
+        <section class="admin-card" aria-labelledby="f-cover">
+          <h2 id="f-cover" class="admin-card__title">{{ coverLabel }}</h2>
+          <AdminFileUpload v-model="draft.coverUrl" kind="image" :label="coverLabel" :hint="coverHint" :error="errors.coverUrl" />
         </section>
 
         <section class="admin-card" aria-labelledby="f-body">
           <h2 id="f-body" class="admin-card__title">نص المادة</h2>
-          <AdminSectionsEditor v-model="draft.sections" />
+          <ClientOnly>
+            <LazyAdminRichTextEditor v-model="draft.bodyHtml" label="نص المادة" />
+            <template #fallback>
+              <p class="rte-placeholder" role="status">جارٍ تحميل المحرّر…</p>
+            </template>
+          </ClientOnly>
         </section>
       </div>
 
@@ -145,8 +154,8 @@ function onTypeChange() {
     </div>
 
     <div class="save-bar">
-      <button type="submit" class="admin-button admin-button--primary" :disabled="saving">
-        <Save :size="18" aria-hidden="true" /> {{ saving ? 'جارٍ الحفظ…' : 'حفظ المادة' }}
+      <button type="submit" class="admin-button admin-button--primary" :disabled="saving || videoUploading">
+        <Save :size="18" aria-hidden="true" /> {{ saving ? 'جارٍ الحفظ…' : videoUploading ? 'بانتظار اكتمال رفع الفيديو…' : 'حفظ المادة' }}
       </button>
       <NuxtLink to="/admin/content" class="admin-button admin-button--ghost">إلغاء</NuxtLink>
     </div>

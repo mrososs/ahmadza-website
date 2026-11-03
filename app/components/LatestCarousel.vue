@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { ChevronLeft, ChevronRight } from '@lucide/vue'
 import type { ContentItem } from '~/types/content'
-import { formatArabicDate } from '~/utils/format'
+import { toContentCard } from '~/utils/content-card'
 
 const { items } = defineProps<{ items: ContentItem[] }>()
-const authorDisplayName = useRuntimeConfig().public.authorDisplayName
 const track = useTemplateRef<HTMLUListElement>('track')
 
 // In RTL, scrollLeft runs negative: "next" scrolls toward the left edge.
@@ -23,15 +22,8 @@ function step(direction: 1 | -1) {
       <button type="button" class="ref-arrow" aria-label="التالي" @click="step(1)"><ChevronLeft :size="18" aria-hidden="true" /></button>
     </div>
     <ul ref="track" class="latest-carousel__track" tabindex="0" aria-label="أحدث المنشورات">
-      <li v-for="item in items" :key="item.id">
-        <article class="post-card">
-          <h3><NuxtLink :to="contentPath(item)">{{ item.title }}</NuxtLink></h3>
-          <p>{{ item.excerpt }}</p>
-          <footer>
-            <span class="post-card__avatar" aria-hidden="true">{{ authorDisplayName.slice(0, 1) }}</span>
-            <span><strong>{{ authorDisplayName }}</strong><time :datetime="item.publishedAt">{{ formatArabicDate(item.publishedAt) }}</time></span>
-          </footer>
-        </article>
+      <li v-for="(item, index) in items" :key="item.id">
+        <ContentCard :card="toContentCard(item)" :eager="index < 3" />
       </li>
     </ul>
   </div>

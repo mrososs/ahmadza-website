@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { ContentItem } from '~/types/content'
+import { toContentCard } from '~/utils/content-card'
+import { formatDuration } from '~/utils/format'
 
 defineProps<{ videos: ContentItem[] }>()
 const isDemo = useIsDemoContent()
@@ -11,10 +13,11 @@ const isDemo = useIsDemoContent()
       <h2 id="youtube-title">أحدث فيديوهات قناة اليوتيوب</h2>
       <ul class="youtube-band__grid">
         <li v-for="video in videos" :key="video.id">
-          <NuxtLink to="/videos" class="youtube-band__card">
-            <VideoPlaceholder :duration="video.type === 'video' ? video.durationSeconds : undefined" />
+          <NuxtLink :to="contentPath(video)" class="youtube-band__card">
+            <ContentCover :image="toContentCard(video).image" type="video" />
             <strong>{{ video.title }}</strong>
-            <small>{{ isDemo ? "لا يوجد رابط فيديو بعد — محتوى تجريبي" : "لا يوجد رابط فيديو بعد" }}</small>
+            <small v-if="video.type === 'video' && video.durationSeconds">{{ formatDuration(video.durationSeconds) }}</small>
+            <small v-if="isDemo">محتوى تجريبي</small>
           </NuxtLink>
         </li>
       </ul>

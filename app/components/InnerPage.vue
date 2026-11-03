@@ -8,6 +8,7 @@ const trail = computed(() => crumbs ?? [{ label: title }])
     <div class="ref-container">
       <Breadcrumbs :items="trail" />
       <section class="inner-card" aria-labelledby="inner-title">
+        <slot name="eyebrow" />
         <h1 id="inner-title" class="inner-card__title">{{ title }}</h1>
         <slot />
       </section>

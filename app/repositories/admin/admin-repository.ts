@@ -11,6 +11,19 @@ import type {
 import type { BrandingImage, BrandingSlot, PreparedBrandingImage, SiteBranding } from '~/types/branding'
 import type { MediaKind } from '~/utils/media-upload'
 
+/** A video that reached private storage, ready to be saved on a record. */
+export interface UploadedVideoFile {
+  path: string
+  mimeType: string
+  bytes: number
+}
+
+/** A running resumable upload. `abort` stops it and discards the partial file. */
+export interface VideoUpload {
+  readonly result: Promise<UploadedVideoFile>
+  abort(): void
+}
+
 export type CategoryInput = Pick<AdminCategory, 'slug' | 'name' | 'description' | 'sortOrder' | 'active'>
 
 /** Raised for failures whose message is already safe and readable to show an editor. */
@@ -41,6 +54,15 @@ export interface AdminRepository {
   deleteContent(id: string): Promise<void>
   /** Stores a validated file in public storage and returns its public URL. `onProgress` receives 0–100. Rejects with an editor-readable AdminError. */
   uploadMedia(kind: MediaKind, file: File, onProgress?: (percent: number) => void): Promise<string>
+  /**
+   * Starts a resumable upload of a validated video into the private videos bucket. Retrying the same file continues from where
+   * the connection dropped. `result` rejects with an editor-readable AdminError.
+   */
+  uploadVideo(file: File, onProgress?: (percent: number) => void): VideoUpload
+  /** A short-lived URL so an editor can preview a stored video. Public visitors get theirs from the site's own endpoint. */
+  previewVideoUrl(path: string): Promise<string>
+  /** Best-effort removal of a file that no saved record points at. Never throws. */
+  removeVideoFile(path: string): Promise<void>
   listCategories(): Promise<AdminCategory[]>
   saveCategory(input: CategoryInput, id?: string): Promise<void>
   /** The header logo and hero image as stored; the bundled artwork where no override exists. */

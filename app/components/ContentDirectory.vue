@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { ContentListResult, ContentType } from '~/types/content'
-import { formatArabicDate } from '~/utils/format'
 
 const { type, title, description } = defineProps<{ type: ContentType; title: string; description: string }>()
 const route = useRoute()
@@ -11,7 +10,7 @@ const requestQuery = computed(() => ({
   q: typeof route.query.q === 'string' ? route.query.q : undefined,
   category: typeof route.query.category === 'string' ? route.query.category : undefined,
   page: typeof route.query.page === 'string' ? route.query.page : '1',
-  limit: '10',
+  limit: '12',
 }))
 
 const { data, status, error } = await useAsyncData(
@@ -32,7 +31,7 @@ const categories = computed(() => {
   return [...map].map(([slug, name]) => ({ slug, name }))
 })
 const hasFilters = computed(() => Boolean(route.query.q || route.query.category))
-const totalPages = computed(() => Math.max(1, Math.ceil((data.value?.total || 0) / (data.value?.pageSize || 10))))
+const totalPages = computed(() => Math.max(1, Math.ceil((data.value?.total || 0) / (data.value?.pageSize || 12))))
 
 function updateQuery(changes: Record<string, string | undefined>) {
   return navigateTo({ path: route.path, query: { ...route.query, ...changes } })
@@ -80,12 +79,7 @@ usePageSeo({ title, description, path: route.path })
         :title="hasFilters ? undefined : 'لا توجد مواد منشورة حاليًا'"
         :description="hasFilters ? undefined : 'سيظهر المحتوى هنا فور نشره.'"
       />
-      <ul v-else class="ref-list">
-        <li v-for="item in data.items" :key="item.id">
-          <NuxtLink :to="contentPath(item)">{{ item.title }}</NuxtLink>
-          <time :datetime="item.publishedAt">{{ formatArabicDate(item.publishedAt) }}</time>
-        </li>
-      </ul>
+      <ContentCardGrid v-else :items="data.items" :eager-count="3" />
     </div>
     <ContentPagination
       v-if="data"

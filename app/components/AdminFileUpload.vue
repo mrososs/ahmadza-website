@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Trash2 } from '@lucide/vue'
 import { AdminError } from '~/repositories/admin/admin-repository'
+import { readImageSize, validateImageDimensions } from '~/utils/image-dimensions'
 import { acceptAttribute, validateMediaFile, type MediaKind } from '~/utils/media-upload'
 
 const url = defineModel<string>({ required: true })
@@ -21,7 +22,7 @@ async function onPick(event: Event) {
   uploadError.value = ''
   uploadedName.value = ''
 
-  const problem = validateMediaFile(kind, file)
+  const problem = validateMediaFile(kind, file) ?? (kind === 'image' ? validateImageDimensions(await readImageSize(file)) : null)
   if (problem) {
     uploadError.value = problem
     input.value = ''
@@ -67,7 +68,7 @@ function remove() {
     <p v-else-if="uploadedName" class="file-upload__done" role="status">تم رفع الملف <bdi>{{ uploadedName }}</bdi> بنجاح. اضغط «حفظ المادة» لتثبيته.</p>
 
     <div v-if="hasLink && !uploading" class="file-upload__preview">
-      <img v-if="kind === 'image'" :src="url" alt="معاينة الصورة" width="120" height="180">
+      <img v-if="kind === 'image'" class="file-upload__image" :src="url" alt="معاينة الصورة">
       <audio v-else-if="kind === 'audio'" controls preload="metadata" :src="url" />
       <a v-else :href="url" target="_blank" rel="noopener">فتح الملف للمعاينة</a>
       <button type="button" class="admin-button admin-button--ghost" @click="remove">

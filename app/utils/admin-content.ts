@@ -1,9 +1,12 @@
 import { z } from 'zod'
-import { contentTypes, type ContentItem, type ContentType } from '~/types/content'
+import { contentTypes, videoSourceOf, type ContentItem, type ContentSection, type ContentType } from '~/types/content'
 import type { ContentDraft, FieldErrors } from '~/types/admin'
+import { isRichTextEmpty, sectionsToHtml } from '~/utils/rich-text'
+import { parseVideoMetadata } from '~/utils/video-metadata'
+import { isVideoPath } from '~/utils/video-upload'
+import { parseYoutubeInput, youtubeWatchUrl } from '~/utils/youtube'
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
-const youtubeIdPattern = /^[\w-]{11}$/
 
 const optionalInt = (label: string, max: number) => z.string().trim()
   .refine(value => value === '' || (/^\d+$/.test(value) && Number(value) > 0 && Number(value) <= max), `${label}: أدخل رقمًا صحيحًا موجبًا`)
@@ -11,19 +14,12 @@ const optionalInt = (label: string, max: number) => z.string().trim()
 const optionalUrl = z.string().trim()
   .refine(value => value === '' || /^https?:\/\//i.test(value), 'الرابط يجب أن يبدأ بـ https://')
 
-const sectionSchema = z.object({
-  id: z.string(),
-  heading: z.string().optional(),
-  paragraphs: z.array(z.string()),
-  quote: z.string().optional(),
-})
-
 export const draftSchema = z.object({
   type: z.enum(contentTypes),
   slug: z.string().trim().regex(slugPattern, 'استخدم أحرفًا لاتينية صغيرة وأرقامًا وشرطات فقط، مثل article-2026-01'),
   title: z.string().trim().min(2, 'العنوان قصير جدًا').max(240, 'العنوان لا يتجاوز 240 حرفًا'),
   excerpt: z.string().trim().max(600, 'الملخص لا يتجاوز 600 حرف'),
-  sections: z.array(sectionSchema),
+  bodyHtml: z.string(),
   status: z.enum(['draft', 'published', 'scheduled', 'archived']),
   publishedAt: z.string(),
   scheduledAt: z.string(),
@@ -41,10 +37,21 @@ export const draftSchema = z.object({
   downloadAllowed: z.boolean(),
   audioUrl: optionalUrl,
   durationSeconds: optionalInt('المدة', 86400),
-  youtubeId: z.string().trim().refine(value => value === '' || youtubeIdPattern.test(value), 'معرّف يوتيوب مكوّن من 11 رمزًا'),
+  youtubeId: z.string().trim(),
+  videoSource: z.enum(['youtube', 'upload']),
+  videoPath: z.string(),
+  videoMimeType: z.string(),
+  videoBytes: z.string(),
 }).superRefine((draft, ctx) => {
   if (draft.status === 'scheduled' && !draft.scheduledAt) {
     ctx.addIssue({ code: 'custom', path: ['scheduledAt'], message: 'حدّد موعد النشر المجدول' })
+  }
+  if (draft.type === 'video' && draft.videoSource === 'youtube' && draft.youtubeId) {
+    const parsed = parseYoutubeInput(draft.youtubeId)
+    if (!parsed.ok) ctx.addIssue({ code: 'custom', path: ['youtubeId'], message: parsed.message })
+  }
+  if (draft.type === 'video' && draft.videoSource === 'upload' && draft.videoPath && !isVideoPath(draft.videoPath)) {
+    ctx.addIssue({ code: 'custom', path: ['videoPath'], message: 'ملف الفيديو غير صالح. ارفعه من جديد.' })
   }
   if (draft.type === 'book' && !draft.authorLabel) {
     ctx.addIssue({ code: 'custom', path: ['authorLabel'], message: 'اسم المؤلف مطلوب للكتب' })
@@ -67,58 +74,84 @@ const toInt = (value: string): number | undefined => value.trim() === '' ? undef
 /** Only the metadata keys relevant to the content type are persisted; empty values are omitted. */
 export function draftToMetadata(draft: ContentDraft): Record<string, unknown> {
   const clean = (entries: Record<string, unknown>) => Object.fromEntries(Object.entries(entries).filter(([, value]) => value !== undefined && value !== ''))
+  const cover = { coverUrl: draft.coverUrl.trim() }
   switch (draft.type) {
     case 'article':
     case 'benefit':
-      return {}
+      return clean(cover)
     case 'sermon':
-      return clean({ linkedAudioSlug: draft.linkedAudioSlug.trim() })
+      return clean({ ...cover, linkedAudioSlug: draft.linkedAudioSlug.trim() })
     case 'book':
       return clean({
+        ...cover,
         authorLabel: draft.authorLabel.trim(),
         publicationYear: toInt(draft.publicationYear),
         pageCount: toInt(draft.pageCount),
         pdfUrl: draft.pdfUrl.trim(),
-        coverUrl: draft.coverUrl.trim(),
         downloadAllowed: draft.downloadAllowed,
       })
     case 'audio':
-      return clean({ audioUrl: draft.audioUrl.trim(), durationSeconds: toInt(draft.durationSeconds) })
-    case 'video':
-      return clean({ youtubeId: draft.youtubeId.trim(), durationSeconds: toInt(draft.durationSeconds) })
+      return clean({ ...cover, audioUrl: draft.audioUrl.trim(), durationSeconds: toInt(draft.durationSeconds) })
+    case 'video': {
+      // The two sources are mutually exclusive: only the selected one is stored, so a switch never leaves a stale file or link behind.
+      const youtube = draft.videoSource === 'youtube' ? parseYoutubeInput(draft.youtubeId) : undefined
+      const uploaded = draft.videoSource === 'upload' && isVideoPath(draft.videoPath)
+      return clean({
+        ...cover,
+        videoSource: draft.videoSource,
+        youtubeId: youtube?.ok ? youtube.id : undefined,
+        videoPath: uploaded ? draft.videoPath : undefined,
+        videoMimeType: uploaded ? draft.videoMimeType : undefined,
+        videoBytes: uploaded ? toInt(draft.videoBytes) : undefined,
+        downloadAllowed: uploaded ? draft.downloadAllowed : undefined,
+        durationSeconds: toInt(draft.durationSeconds),
+      })
+    }
   }
 }
 
-export function metadataToDraftFields(type: ContentType, metadata: Record<string, unknown>): Pick<ContentDraft, 'linkedAudioSlug' | 'authorLabel' | 'publicationYear' | 'pageCount' | 'pdfUrl' | 'coverUrl' | 'downloadAllowed' | 'audioUrl' | 'durationSeconds' | 'youtubeId'> {
+type DraftMetadataFields = Pick<ContentDraft, 'linkedAudioSlug' | 'authorLabel' | 'publicationYear' | 'pageCount' | 'pdfUrl' | 'coverUrl' | 'downloadAllowed' | 'audioUrl' | 'durationSeconds' | 'youtubeId' | 'videoSource' | 'videoPath' | 'videoMimeType' | 'videoBytes'>
+
+export function metadataToDraftFields(type: ContentType, metadata: Record<string, unknown>): DraftMetadataFields {
   const text = (key: string) => typeof metadata[key] === 'string' ? metadata[key] : ''
   const num = (key: string) => typeof metadata[key] === 'number' ? String(metadata[key]) : ''
+  const video = type === 'video' ? parseVideoMetadata(metadata) : undefined
   return {
     linkedAudioSlug: type === 'sermon' ? text('linkedAudioSlug') : '',
     authorLabel: type === 'book' ? text('authorLabel') : '',
     publicationYear: type === 'book' ? num('publicationYear') : '',
     pageCount: type === 'book' ? num('pageCount') : '',
     pdfUrl: type === 'book' ? text('pdfUrl') : '',
-    coverUrl: type === 'book' ? text('coverUrl') : '',
-    downloadAllowed: type === 'book' && metadata.downloadAllowed === true,
+    coverUrl: text('coverUrl'),
+    downloadAllowed: type === 'book' ? metadata.downloadAllowed === true : Boolean(video?.videoPath && video.downloadAllowed),
     audioUrl: type === 'audio' ? text('audioUrl') : '',
     durationSeconds: type === 'audio' || type === 'video' ? num('durationSeconds') : '',
-    youtubeId: type === 'video' ? text('youtubeId') : '',
+    // Rows saved before uploads existed carry only a bare id and no source; the id means YouTube.
+    youtubeId: video?.youtubeId ? youtubeWatchUrl(video.youtubeId) : '',
+    videoSource: video?.videoPath && !video.youtubeId ? 'upload' : 'youtube',
+    videoPath: video?.videoPath ?? '',
+    videoMimeType: video?.uploadedVideo?.mimeType ?? '',
+    videoBytes: video?.uploadedVideo?.bytes === undefined ? '' : String(video.uploadedVideo.bytes),
   }
 }
 
-export function itemToDraftFields(item: ContentItem): ReturnType<typeof metadataToDraftFields> {
+export function itemToDraftFields(item: ContentItem): DraftMetadataFields {
+  const cover = { coverUrl: item.coverUrl }
   switch (item.type) {
     case 'article':
     case 'benefit':
-      return metadataToDraftFields(item.type, {})
+      return metadataToDraftFields(item.type, cover)
     case 'sermon':
-      return metadataToDraftFields('sermon', { linkedAudioSlug: item.linkedAudioSlug })
+      return metadataToDraftFields('sermon', { ...cover, linkedAudioSlug: item.linkedAudioSlug })
     case 'book':
-      return metadataToDraftFields('book', { authorLabel: item.authorLabel, publicationYear: item.publicationYear, pageCount: item.pageCount, pdfUrl: item.pdfUrl, coverUrl: item.coverUrl, downloadAllowed: item.downloadAllowed })
+      return metadataToDraftFields('book', { ...cover, authorLabel: item.authorLabel, publicationYear: item.publicationYear, pageCount: item.pageCount, pdfUrl: item.pdfUrl, downloadAllowed: item.downloadAllowed })
     case 'audio':
-      return metadataToDraftFields('audio', { audioUrl: item.audioUrl, durationSeconds: item.durationSeconds })
+      return metadataToDraftFields('audio', { ...cover, audioUrl: item.audioUrl, durationSeconds: item.durationSeconds })
     case 'video':
-      return metadataToDraftFields('video', { youtubeId: item.youtubeId, durationSeconds: item.durationSeconds })
+      return {
+        ...metadataToDraftFields('video', { ...cover, youtubeId: item.youtubeId, durationSeconds: item.durationSeconds }),
+        videoSource: videoSourceOf(item) ?? 'youtube',
+      }
   }
 }
 
@@ -128,7 +161,7 @@ export function emptyDraft(type: ContentType = 'article'): ContentDraft {
     slug: suggestSlug(type),
     title: '',
     excerpt: '',
-    sections: [{ id: crypto.randomUUID(), heading: '', paragraphs: [''] }],
+    bodyHtml: '',
     status: 'draft',
     publishedAt: '',
     scheduledAt: '',
@@ -160,14 +193,10 @@ export function localInputToIso(value: string): string | null {
   return Number.isNaN(date.getTime()) ? null : date.toISOString()
 }
 
-/** Removes blank paragraphs and empty sections so the public reader never renders empty blocks. */
-export function cleanSections(sections: ContentDraft['sections']): ContentDraft['sections'] {
-  return sections
-    .map(section => ({
-      id: section.id,
-      ...(section.heading?.trim() ? { heading: section.heading.trim() } : {}),
-      paragraphs: section.paragraphs.map(paragraph => paragraph.trim()).filter(Boolean),
-      ...(section.quote?.trim() ? { quote: section.quote.trim() } : {}),
-    }))
-    .filter(section => section.paragraphs.length > 0 || section.heading || section.quote)
+/** The stored body: one rich section, or nothing when the editor is empty. `html` must already be sanitized. */
+export function draftToBody(html: string): ContentSection[] {
+  return isRichTextEmpty(html) ? [] : [{ id: 'body', paragraphs: [], html }]
 }
+
+/** Editor HTML for a stored body, converting sections written before the rich editor. */
+export const bodyToDraftHtml = (sections: readonly ContentSection[]): string => sectionsToHtml(sections)

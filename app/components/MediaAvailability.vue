@@ -7,6 +7,7 @@ import { formatDuration } from '~/utils/format'
 const { item } = defineProps<{ item: AudioContent | BookContent | VideoContent }>()
 const isDemo = useIsDemoContent()
 const isReading = shallowRef(false)
+const videoDownloadHref = computed(() => item.type === 'video' && item.uploadedVideo && item.downloadAllowed ? `/api/videos/${item.slug}/download` : undefined)
 const downloadHref = computed(() => item.type === 'book' && item.pdfUrl && item.downloadAllowed ? bookDownloadUrl(item.pdfUrl, item.slug) : '')
 </script>
 
@@ -44,15 +45,15 @@ const downloadHref = computed(() => item.type === 'book' && item.pdfUrl && item.
     </template>
 
     <template v-else>
-      <div v-if="item.youtubeId" class="video-embed">
-        <iframe
-          :src="`https://www.youtube-nocookie.com/embed/${item.youtubeId}`"
-          :title="item.title"
-          loading="lazy"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowfullscreen
-        />
-      </div>
+      <VideoPlayer
+        v-if="item.youtubeId || item.uploadedVideo"
+        class="media-availability__player"
+        :title="item.title"
+        :youtube-id="item.uploadedVideo ? undefined : item.youtubeId"
+        :slug="item.uploadedVideo ? item.slug : undefined"
+        :poster="item.coverUrl"
+        :download-href="videoDownloadHref"
+      />
       <template v-else>
         <Play :size="28" aria-hidden="true" />
         <div><h2>المشاهدة</h2><p>{{ formatDuration(item.durationSeconds) }}</p></div>

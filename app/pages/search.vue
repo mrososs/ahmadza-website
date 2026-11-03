@@ -38,11 +38,6 @@ usePageSeo({ title: 'البحث في المكتبة', description: 'بحث مو�
     <div v-if="status === 'pending'" class="loading-state" role="status">جارٍ البحث…</div>
     <div v-else-if="error" class="error-state" role="alert">تعذر إتمام البحث الآن.</div>
     <EmptyState v-else-if="!data?.items.length" title="لا توجد نتائج بهذه العبارة" />
-    <ul v-else class="ref-list" data-testid="search-results">
-      <li v-for="item in data.items" :key="item.id">
-        <NuxtLink :to="contentPath(item)">{{ item.title }}</NuxtLink>
-        <small>{{ contentTypeLabels[item.type] }}</small>
-      </li>
-    </ul>
+    <ContentCardGrid v-else :items="data.items" :eager-count="3" data-testid="search-results" />
   </InnerPage>
 </template>
