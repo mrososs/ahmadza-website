@@ -740,7 +740,7 @@ html { scroll-padding-block-start: 8.5rem; }
 .search-results__summary { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding-block: 1rem .5rem; }
 .search-results__summary h2 { margin: 0; font-family: var(--font-library); font-size: 1.2rem; }
 .search-results__summary span { color: #666; font-size: .85rem; }
-.share-actions .round-action { width: 44px; min-height: 44px; padding: 0; border: 0; background: #111; color: var(--ref-orange); }
+.share-actions .round-action { width: 44px; min-height: 44px; border: 0; background: #111; color: var(--ref-orange); }
 /* Layout check: 44px touch targets for text links, and a centred video row that stays balanced with 1-3 items. */
 .ref-list a, .post-card h3 a, .site-footer__grid a, .breadcrumbs a, .table-of-contents a { display: inline-flex; align-items: center; min-height: 44px; }
 .youtube-band__grid { display: flex; flex-wrap: wrap; justify-content: center; }
