@@ -2,6 +2,7 @@
 import { contentTypeLabels, contentTypePluralLabels, contentTypeRoutes, type ContentDetailResult } from '~/types/content'
 import { formatArabicDate } from '~/utils/format'
 import { extractHeadings } from '~/utils/rich-text'
+import { toContentCard } from '~/utils/content-card'
 import { youtubeThumbnailUrl } from '~/utils/youtube'
 
 const { result } = defineProps<{ result: ContentDetailResult }>()
@@ -13,10 +14,9 @@ const routePath = computed(() => `${listingPath.value}/${item.value.slug}`)
 const isMedia = computed(() => ['book', 'audio', 'video'].includes(item.value.type))
 const authorDisplayName = useRuntimeConfig().public.authorDisplayName
 
-// Books show their cover beside the facts and videos in the player; every other type leads with a wide cover.
-const leadCover = computed(() => item.value.type !== 'book' && item.value.type !== 'video' ? item.value.coverUrl : undefined)
-const coverFailed = shallowRef(false)
-watch(leadCover, () => { coverFailed.value = false })
+// Every type except video (which has its player) shows its picture beside the text: the item's own cover, or the local default for its type.
+const hasSideImage = computed(() => item.value.type !== 'video')
+const sideImage = computed(() => toContentCard(item.value).image)
 
 // Contents list: headings written in the rich editor plus section headings of older plain-text articles.
 const headings = computed(() => item.value.sections.flatMap(section => section.html === undefined
@@ -98,10 +98,6 @@ useHead({
         <strong v-if="result.source === 'demo'" class="detail-meta-line__demo">محتوى تجريبي</strong>
       </p>
 
-      <figure v-if="leadCover && !coverFailed" class="detail-cover">
-        <img :src="leadCover" :alt="`صورة غلاف: ${item.title}`" width="1280" height="720" fetchpriority="high" @error="coverFailed = true">
-      </figure>
-
       <div class="detail-tools">
         <div class="detail-tools__size" role="group" aria-label="حجم الخط">
           <button type="button" :disabled="scale >= 1.5" @click="resize(0.1)">تكبير</button>
@@ -110,10 +106,13 @@ useHead({
         <ShareActions :title="item.title" />
       </div>
 
-      <img v-if="item.type === 'book' && item.coverUrl" class="book-cover" :src="item.coverUrl" :alt="`غلاف كتاب ${item.title}`" width="200" height="300">
-
       <MediaAvailability v-if="isMedia" :item="item as never" />
 
+      <div class="detail-layout" :class="{ 'detail-layout--media': hasSideImage }">
+        <aside v-if="hasSideImage" class="detail-media" aria-label="صورة المادة">
+          <ContentCover :image="sideImage" :type="item.type" eager />
+        </aside>
+        <div class="detail-main">
       <nav v-if="headings.length" aria-label="في هذه الصفحة" class="table-of-contents">
         <h2>في هذه الصفحة</h2>
         <a v-for="heading in headings" :key="heading.id" :href="`#${heading.id}`">{{ heading.text }}</a>
@@ -128,6 +127,9 @@ useHead({
             <blockquote v-if="section.quote">{{ section.quote }}</blockquote>
           </section>
         </template>
+      </div>
+
+        </div>
       </div>
 
       <section v-if="result.related.length" class="related-content" aria-labelledby="related-title">
