@@ -2,8 +2,10 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { ContentRepository } from '~/repositories/content-repository'
 import type { SiteBrandingResult } from '~/types/branding'
 import type { ContentDetailResult, ContentItem, ContentListResult, ContentQuery, ContentType, VideoAccessMode, VideoAccessResult } from '~/types/content'
+import { publicationSettingKey, type PublicationMode } from '~/types/publication'
 import { brandingSettingKeys, brandingStorageBase } from '~/utils/branding'
 import { parseBrandingRows } from '~/utils/branding-rows'
+import { parsePublicationMode } from '~/utils/publication'
 import { parseVideoMetadata } from '~/utils/video-metadata'
 import { videoBucket } from '~/utils/video-upload'
 
@@ -92,8 +94,15 @@ function mapRow(row: ContentRow): ContentItem {
 export class SupabaseContentRepository implements ContentRepository {
   private readonly client: SupabaseClient
 
-  constructor(private readonly url: string, publishableKey: string) {
-    this.client = createClient(url, publishableKey, { auth: { persistSession: false, autoRefreshToken: false } })
+  /**
+   * `previewToken` is an admin's preview session. It rides on every request as `x-preview-token` (REST and Storage alike),
+   * and the database's read policies decide whether it is valid; this class never judges it.
+   */
+  constructor(private readonly url: string, private readonly publishableKey: string, previewToken?: string) {
+    this.client = createClient(url, publishableKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+      ...(previewToken ? { global: { headers: { 'x-preview-token': previewToken } } } : {}),
+    })
   }
 
   async list(query: ContentQuery = {}): Promise<ContentListResult> {
@@ -167,5 +176,42 @@ export class SupabaseContentRepository implements ContentRepository {
     const { data, error } = await this.client.from('site_settings').select('key, value').in('key', [...brandingSettingKeys])
     if (error) throw new Error(`Supabase branding failed: ${error.message}`)
     return { branding: parseBrandingRows(data, brandingStorageBase(this.url)), source: 'supabase' }
+  }
+
+  async getPublication(): Promise<PublicationMode> {
+    // The row is public by design (the gate has to read it for anonymous visitors); it carries no content.
+    const { data, error } = await this.client.from('site_settings').select('value').eq('key', publicationSettingKey).maybeSingle()
+    if (error) throw new Error(`Supabase publication state failed: ${error.message}`)
+    return parsePublicationMode(data?.value)
+  }
+
+  async verifyPreviewToken(token: string): Promise<boolean> {
+    const { data, error } = await this.client.rpc('verify_preview_token', { token })
+    if (error) throw new Error(`Supabase preview verification failed: ${error.message}`)
+    return data === true
+  }
+
+  withPreviewToken(token: string): ContentRepository {
+    return new SupabaseContentRepository(this.url, this.publishableKey, token)
+  }
+
+  async startPreviewSession(accessToken: string): Promise<string | null> {
+    // The admin's own JWT is the caller: `start_preview_session` raises unless it belongs to an active admin profile.
+    const client = createClient(this.url, this.publishableKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: { headers: { Authorization: `Bearer ${accessToken}` } },
+    })
+    const { data, error } = await client.rpc('start_preview_session')
+    if (error) {
+      // 42501: not an active admin. PGRST301/PGRST303: the token is not (or no longer) a valid session.
+      if (error.code === '42501' || error.code === 'PGRST301' || error.code === 'PGRST303') return null
+      throw new Error(`Supabase preview session failed: ${error.message}`)
+    }
+    return typeof data === 'string' && /^[0-9a-f]{64}$/.test(data) ? data : null
+  }
+
+  async endPreviewSession(token: string): Promise<void> {
+    const { error } = await this.client.rpc('end_preview_session', { token })
+    if (error) throw new Error(`Supabase preview session end failed: ${error.message}`)
   }
 }

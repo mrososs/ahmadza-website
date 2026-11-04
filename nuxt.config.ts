@@ -45,6 +45,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     supabaseUrl: '',
     supabasePublishableKey: '',
+    // Tests only: NUXT_SITE_ACCESS_DEMO_MODE=maintenance puts the demo repository in maintenance. Never read by the Supabase adapter.
+    siteAccessDemoMode: '',
     public: {
       // The publishable key is designed for browsers; RLS and admin_profiles gate every write.
       supabaseUrl: '',
@@ -60,7 +62,9 @@ export default defineNuxtConfig({
     url: process.env.NUXT_PUBLIC_SITE_URL || 'https://prof-ahmadza.com',
     name: 'مكتبة أحمد الزهراني الرقمية',
   },
-  sitemap: { sources: ['/api/__sitemap__/urls'], exclude: ['/admin', '/admin/**'] },
+  // The sitemap is rebuilt at most once a minute, so a launch shows up in it quickly. While the site is in maintenance the gate answers
+  // /sitemap.xml itself (503), so nothing is ever built or cached from hidden content.
+  sitemap: { sources: ['/api/__sitemap__/urls'], exclude: ['/admin', '/admin/**'], cacheMaxAgeSeconds: 60 },
   routeRules: {
     '/admin/**': { ssr: false, headers: { 'x-robots-tag': 'noindex, nofollow' } },
     // Content pages are rendered per request on purpose: stale-while-revalidate kept serving an empty list
@@ -73,7 +77,8 @@ export default defineNuxtConfig({
     publicAssets: pdfjsAssets,
     // No crawlLinks: crawling the site navigation froze every content list (and any item that existed at build
     // time) into static HTML, so books published later never appeared. Only truly static routes are prerendered.
-    prerender: { crawlLinks: false, routes: ['/robots.txt'] },
+    // /robots.txt is a server route: it has to follow the publication state.
+    prerender: { crawlLinks: false, routes: [] },
   },
   typescript: { typeCheck: true, strict: true },
 })

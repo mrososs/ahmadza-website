@@ -4,7 +4,7 @@ const isContentType = (value: unknown): value is ContentType => typeof value ===
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
-  const repository = getContentRepository()
+  const repository = getContentRepository(event)
   const options: ContentQuery = {
     ...(isContentType(query.type) ? { type: query.type } : {}),
     ...(typeof query.q === 'string' && query.q.trim() ? { query: query.q.trim() } : {}),

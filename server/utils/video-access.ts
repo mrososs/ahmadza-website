@@ -13,7 +13,7 @@ export async function resolveVideoAccess(event: H3Event, mode: VideoAccessMode) 
 
   let access
   try {
-    access = await getContentRepository().getVideoAccess(slug, mode)
+    access = await getContentRepository(event).getVideoAccess(slug, mode)
   }
   catch (cause) {
     console.error('Video access failure', cause)
