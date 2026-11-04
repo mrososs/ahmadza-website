@@ -52,8 +52,14 @@ This repository contains one Arabic-first Nuxt 4 public website and its content 
 - Required before handoff: `npm run typecheck`, `npm run build`, and `npm run test:e2e`.
 - Browser checks cover 360, 390, 768, 1024, and 1440 widths, keyboard navigation, search, mobile navigation, detail routes, copy-link behavior, and media empty states.
 
+## Private launch
+
+- The site is hidden until the owner publishes it (`site.publication`, default maintenance). The server gate (`server/middleware/site-access.ts`) and the RLS read policies enforce it; never rely on client state, query parameters, local storage or unsigned cookies for access.
+- Anything new that serves content (routes, APIs, files, feeds) must go through the gate: do not prerender it, do not put it in `public/`, and do not add it to the gate's open list (`server/utils/site-access-paths.ts`) unless it carries no content. Read content only through `getContentRepository(event)` so an admin preview reaches the database.
+- A new table or bucket that anonymous users can read needs the same `site_is_published()` condition in its policy.
+
 ## Admin console
 
-- Admin routes live under `app/pages/admin/`, use the `admin` layout and `admin` middleware, and are never SSR, indexed, or linked from public pages.
+- Admin routes live under `app/pages/admin/`, use the `admin` layout and `admin` middleware, and are never SSR, indexed, or linked from public pages. Two deliberate exceptions: the owner's «دخول المدير» entrance on the coming-soon page, and the «معاينة المدير» bar, which only a server-verified admin preview ever receives.
 - Admin data goes through `AdminRepository` (`app/repositories/admin/`); the demo adapter is dev-only and must stay a dynamic import.
 - The browser uses only the publishable key. RLS is the authorization boundary; the route guard is UX.

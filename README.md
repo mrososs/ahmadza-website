@@ -16,7 +16,7 @@ copy .env.example .env
 npm run dev
 ```
 
-Open `http://localhost:3000`. Without Supabase values, server responses include `source: "demo"` and use bundled fixtures.
+Open `http://localhost:3000`. Without Supabase values, server responses include `source: "demo"` and use bundled fixtures. With Supabase values the site starts in maintenance (it shows «قريبًا بإذن الله») until the owner publishes it from `/admin/branding`; sign in at `/admin/login` and use «معاينة الموقع» to browse it first.
 
 ## Verification
 
@@ -25,7 +25,10 @@ npm run typecheck
 npm run build
 npx playwright install chromium
 npm run test:e2e
+npm run test:e2e:maintenance   # coming-soon page (demo data, no Docker)
 ```
+
+The real-Supabase suites (`test:e2e:publication`, `test:e2e:branding`) need a local stack; see `docs/LAUNCH.md`.
 
 ## Configuration
 
@@ -54,6 +57,7 @@ The migration disables public sign-up in local config, creates the content found
 - [Architecture](./docs/ARCHITECTURE.md)
 - [Reference analysis](./docs/REFERENCE_ANALYSIS.md)
 - [Implementation specification](./docs/IMPLEMENTATION_PLAN.md)
+- [Private launch, settings and rollback](./docs/LAUNCH.md)
 - [Architecture decisions](./docs/decisions/README.md)
 - [Changelog](./CHANGELOG.md)
 
