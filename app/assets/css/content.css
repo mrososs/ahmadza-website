@@ -44,8 +44,6 @@
 .latest-carousel__track > li { display: flex; }
 
 /* ---------- Home video band (navy section) ---------- */
-.youtube-band .content-cover { aspect-ratio: 16 / 9; border: 1px solid rgb(255 255 255 / 30%); border-radius: 8px; }
-.youtube-band__card strong { color: #fff; line-height: 1.7; }
 
 /* ---------- Article detail ---------- */
 .detail-eyebrow { margin: 0 0 .35rem; color: var(--content-type); font-size: .95rem; font-weight: 700; }

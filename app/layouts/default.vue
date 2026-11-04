@@ -6,7 +6,6 @@ const libraryRequest = useLibraryContent()
 const [{ data }] = await Promise.all([libraryRequest, useSiteBranding().ready])
 const items = computed(() => data.value?.items ?? [])
 const latest = computed(() => items.value.slice(0, 5))
-const videos = computed(() => items.value.filter(item => item.type === 'video').slice(0, 4))
 </script>
 
 <template>
@@ -17,7 +16,6 @@ const videos = computed(() => items.value.filter(item => item.type === 'video').
     <main id="main-content">
       <slot />
     </main>
-    <YoutubeBand :videos="videos" />
     <AppFooter />
   </div>
 </template>
