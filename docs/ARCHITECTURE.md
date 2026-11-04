@@ -45,6 +45,10 @@ Pages never import demo fixtures or the Supabase SDK. They use `/api/content` an
 
 The API returns `source: "demo" | "supabase"` so developer and UI diagnostics never pretend demo data is remote content.
 
+## Access gate (private launch)
+
+`server/middleware/site-access.ts` runs before every page, API and file the server produces. While `site.publication` is not `published` it answers `503` + `noindex` + `no-store` (HTML coming-soon page, JSON, or text), except for the admin console shell, build assets, bundled artwork, `/robots.txt`, `/api/branding` and `/api/preview/session`. The RLS read policies follow the same switch, and an admin preview is a database-issued session. See [ADR 0004](./decisions/0004-private-launch-maintenance-gate.md) and [LAUNCH.md](./LAUNCH.md). `/robots.txt` is a server route (it depends on the state), so nothing may be prerendered or added to `public/` that would bypass the gate.
+
 ## Rendering and caching
 
 - Home/about are prerendered.
@@ -60,7 +64,8 @@ Without the download option the page has no download affordance, but this is not
 
 ## Security
 
-- Public APIs expose only published content.
+- Public APIs expose only published content, and nothing at all while the site is in maintenance (gate and RLS).
+- The Supabase URL and publishable key are public, so the database, not the page, has to refuse content in maintenance; it does (`site_is_published()` in the anonymous policies).
 - RLS is enabled for all public tables. Anonymous roles receive select-only policies constrained by publication state.
 - Future admin writes require authenticated membership in `admin_profiles`; no public sign-up or client-trusted role metadata exists.
 - Service/secret keys never enter public runtime config or browser bundles.

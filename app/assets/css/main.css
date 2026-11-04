@@ -792,3 +792,10 @@ html { scrollbar-width: thin; scrollbar-color: var(--library-orange) var(--libra
 .latest-ticker__toggle:hover { color: #f0dcae; }
 .latest-ticker__toggle:focus-visible { outline: 2px solid #fff; outline-offset: -4px; }
 @media (prefers-reduced-motion: reduce) { .latest-ticker__toggle { display: none; } }
+
+/* Admin preview bar (PreviewBar): shown only to an admin previewing an unpublished site, stuck to the bottom edge. */
+.preview-bar { position: sticky; inset-block-end: 0; z-index: 60; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .25rem 1.25rem; padding: .5rem max(1rem, calc((100% - 1240px) / 2)); background: #1f1d39; color: #f3e7c9; border-block-start: 3px solid var(--library-orange); font-family: var(--font-library); font-size: .98rem; }
+.preview-bar__text { display: inline-flex; align-items: center; gap: .5rem; margin: 0; }
+.preview-bar__link { display: inline-flex; align-items: center; min-block-size: 44px; padding-inline: 1rem; background: var(--library-orange); color: #1f1d39; font-weight: 700; text-decoration: none; }
+.preview-bar__link:hover { filter: brightness(.93); }
+.preview-bar__link:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }

@@ -3,6 +3,7 @@ import type { ContentListResult, ContentType } from '~/types/content'
 
 const { type, title, description } = defineProps<{ type: ContentType; title: string; description: string }>()
 const route = useRoute()
+const requestFetch = useRequestFetch()
 const queryInput = shallowRef(typeof route.query.q === 'string' ? route.query.q : '')
 
 const requestQuery = computed(() => ({
@@ -15,12 +16,12 @@ const requestQuery = computed(() => ({
 
 const { data, status, error } = await useAsyncData(
   () => `directory-${type}-${JSON.stringify(requestQuery.value)}`,
-  () => $fetch<ContentListResult>('/api/content', { query: requestQuery.value }),
+  () => requestFetch<ContentListResult>('/api/content', { query: requestQuery.value }),
   { watch: [requestQuery] },
 )
 const { data: categoryData } = await useAsyncData(
   `categories-${type}`,
-  () => $fetch<ContentListResult>('/api/content', { query: { type, limit: 50 } }),
+  () => requestFetch<ContentListResult>('/api/content', { query: { type, limit: 50 } }),
 )
 
 const categories = computed(() => {

@@ -11,7 +11,7 @@ An Arabic RTL content console deployed with the public site. It is client-render
 | `/admin/content` | Filterable list (type, status, title search in the URL), delete with confirmation. |
 | `/admin/content/new`, `/admin/content/:id` | Editor: basics, type-specific fields, body sections, publishing, categories, SEO. |
 | `/admin/categories` | Create and edit categories. |
-| `/admin/branding` | Owner only. Replace the header logo and the hero image, with preview, validation and reset (see "Site branding"). |
+| `/admin/branding` | Site settings. **حالة نشر الموقع** (owner changes it, editors read it) and, below it, the header logo and hero image (owner only; see "Site branding"). |
 
 ## Configuration
 
@@ -64,6 +64,17 @@ Required Supabase dashboard settings (Authentication → URL Configuration), whi
 
 `SMOKE_URL=https://… npx playwright test -c playwright.smoke.config.ts` runs read-only checks (public pages, empty states, admin protection, bad-credential rejection, recovery pages). Optional `SMOKE_SUPABASE_URL`/`SMOKE_SUPABASE_KEY` add anonymous-write checks; `SMOKE_ADMIN_EMAIL`/`SMOKE_ADMIN_PASSWORD` add a sign-in/sign-out check. Nothing is created or deleted.
 
+## Private launch: publication state and preview
+
+The site is hidden from visitors until the owner publishes it (design: [ADR 0004](./decisions/0004-private-launch-maintenance-gate.md); settings and rollout: [LAUNCH.md](./LAUNCH.md)).
+
+- **State:** `site_settings` key `site.publication`, `{"mode":"maintenance"|"published"}`, public-readable. No row, a malformed row or an unreadable database all mean maintenance. Only an active owner can write it (RLS); the existing trigger stamps `updated_at` / `updated_by`, which the panel shows as «آخر تغيير … بواسطة …».
+- **Panel:** «حالة نشر الموقع» at the top of `/admin/branding` shows the state, an explanation, the last change, the switch «نشر الموقع للجمهور» and «معاينة الموقع». The switch never saves by itself: it opens a confirmation (publish, or return to maintenance), saves once, shows success or failure, and only then moves, after the saved row has been read back. It is disabled while saving and for editors. A change reaches visitors within about 5 seconds.
+- **Dashboard:** a «معاينة الموقع» card with the current state; the sidebar has the same action. Both open the real site in a new tab.
+- **Preview:** signing in (or opening the console again, or pressing «معاينة الموقع») asks the site's server for a preview session. The server passes the admin's own Supabase token to `start_preview_session()`; the database requires an active `admin_profiles` row, stores only a hash of a random token, and the server keeps the token in an HttpOnly cookie (`__Host-ahmadza-preview` over HTTPS). While the site is in maintenance, requests with a valid cookie get the real site (published content only, exactly as visitors will see it after launch) with `Cache-Control: private, no-store` and `noindex`, and a bar «معاينة المدير» with a link back to `/admin`. Signing out revokes the session in the database and clears the cookie; deactivating the profile or 12 hours also ends it. Editors can preview; only owners can publish.
+- **Not authorization:** a URL parameter, local storage flag, header, or an admin access token alone never opens the hidden site. Drafts are never shown in preview.
+- **Demo sandbox:** in `nuxt dev` without Supabase the panel works in memory only and does not change what the demo site shows.
+
 ## Site branding (`/admin/branding`)
 
 The owner can replace two images without touching code or redeploying:
@@ -93,7 +104,8 @@ Both bundled images are the client's «أحمد الزهراني» artwork. The 
 
 ## Known gaps / next steps
 
-- Site settings other than branding: `site_settings` only accepts the two branding keys (owner-only); other settings need their own policy.
+- Site settings other than branding and publication: `site_settings` only accepts those keys (owner-only); other settings need their own policy.
+- Publication history: only the last change (who, when) is recorded. A full log would need its own table.
 - Replaced or reset branding files are never deleted by the app; prune them from the `site-branding` bucket if storage matters.
 - Rich text beyond paragraphs, headings and a pull quote.
 - Role-based UI (owners vs editors) and an admin-users screen.

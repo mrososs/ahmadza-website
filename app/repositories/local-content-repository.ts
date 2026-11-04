@@ -2,6 +2,7 @@ import { demoContent } from '~/data/demo-content'
 import type { ContentRepository } from '~/repositories/content-repository'
 import type { SiteBrandingResult } from '~/types/branding'
 import type { ContentDetailResult, ContentItem, ContentListResult, ContentQuery, ContentType, VideoAccessResult } from '~/types/content'
+import type { PublicationMode } from '~/types/publication'
 import { defaultSiteBranding } from '~/utils/branding'
 
 const normalize = (value: string) => value.trim().toLocaleLowerCase('ar').replace(/[\u064B-\u065F\u0670]/g, '')
@@ -13,6 +14,9 @@ const matchesQuery = (item: ContentItem, query: string) => {
 }
 
 export class LocalContentRepository implements ContentRepository {
+  /** The demo data is labelled demo content and has no admin, so its publication state is fixed by the caller. */
+  constructor(private readonly publication: PublicationMode = 'published') {}
+
   async list(query: ContentQuery = {}): Promise<ContentListResult> {
     const page = Math.max(1, query.page ?? 1)
     const pageSize = Math.min(100, Math.max(1, query.limit ?? 12))
@@ -55,4 +59,23 @@ export class LocalContentRepository implements ContentRepository {
   async getBranding(): Promise<SiteBrandingResult> {
     return { branding: defaultSiteBranding(), source: 'demo' }
   }
+
+  async getPublication(): Promise<PublicationMode> {
+    return this.publication
+  }
+
+  /** There are no admin sessions in the demo repository, so no preview token is ever valid. */
+  async verifyPreviewToken(): Promise<boolean> {
+    return false
+  }
+
+  withPreviewToken(): ContentRepository {
+    return this
+  }
+
+  async startPreviewSession(): Promise<string | null> {
+    return null
+  }
+
+  async endPreviewSession(): Promise<void> {}
 }

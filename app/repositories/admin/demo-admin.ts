@@ -3,6 +3,7 @@ import { contentTypes, type ContentType, type PublishStatus } from '~/types/cont
 import type { AdminCategory, AdminContentFilter, AdminContentRecord, AdminContentSummary, AdminProfile, AdminStats, ContentDraft } from '~/types/admin'
 import { publishStatuses } from '~/types/admin'
 import type { BrandingImage, BrandingSlot, PreparedBrandingImage, SiteBranding } from '~/types/branding'
+import type { PublicationMode, PublicationRecord } from '~/types/publication'
 import { bodyToDraftHtml, itemToDraftFields } from '~/utils/admin-content'
 import { defaultSiteBranding } from '~/utils/branding'
 import { AdminError, type AdminAuth, type AdminBackend, type AdminRepository, type CategoryInput, type VideoUpload } from '~/repositories/admin/admin-repository'
@@ -16,6 +17,7 @@ class DemoAdminAuth implements AdminAuth {
   async restore() { return this.signedIn ? demoProfile : null }
   async signIn() { this.signedIn = true; return demoProfile }
   async signOut() { this.signedIn = false }
+  async accessToken() { return null }
   async requestPasswordReset() { /* no mail is sent in the demo sandbox */ }
   async completeRecovery() { return this.signedIn }
   async updatePassword() { this.signedIn = true; return demoProfile }
@@ -26,6 +28,7 @@ class DemoAdminRepository implements AdminRepository {
   private readonly records = new Map<string, AdminContentRecord & { updatedAt: string }>()
   private readonly categories = new Map<string, AdminCategory>()
   private readonly branding = defaultSiteBranding()
+  private publication: PublicationRecord = { mode: 'maintenance', configured: false, updatedAt: null, updatedByName: null }
 
   constructor() {
     demoCategories.forEach((category, index) => {
@@ -138,6 +141,16 @@ class DemoAdminRepository implements AdminRepository {
     this.releaseBlob(slot)
     this.branding[slot] = defaultSiteBranding()[slot]
     return { ...this.branding[slot] }
+  }
+
+  /** In-memory only: the sandbox has no server state, so this never changes what the public site shows. */
+  async getPublication(): Promise<PublicationRecord> {
+    return { ...this.publication }
+  }
+
+  async setPublication(mode: PublicationMode): Promise<PublicationRecord> {
+    this.publication = { mode, configured: true, updatedAt: new Date().toISOString(), updatedByName: demoProfile.displayName }
+    return { ...this.publication }
   }
 
   private releaseBlob(slot: BrandingSlot) {

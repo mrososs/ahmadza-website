@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { makePng } from '../support/png'
-import { anonHeaders, clearBranding, configured, editor, expectNoRowsAffected, insertBrandingRow, owner, seedAdmin, settingRows, signInToken, supabaseUrl, userHeaders } from './support'
+import { anonHeaders, clearBranding, configured, editor, expectNoRowsAffected, insertBrandingRow, owner, seedAdmin, setPublicationState, settingRows, signInToken, supabaseUrl, userHeaders, waitUntilPublic } from './support'
 
 // Runs against a real local Supabase stack: real Auth, PostgREST row-level security and Storage limits.
 test.skip(!configured, 'set BRANDING_SUPABASE_URL, BRANDING_SUPABASE_KEY and BRANDING_SUPABASE_SECRET_KEY for a local stack')
@@ -40,6 +40,9 @@ test.beforeAll(async ({ request }) => {
   await seedAdmin(request, owner)
   await seedAdmin(request, editor)
   await clearBranding(request)
+  // The public pages these tests read are hidden until the site is published.
+  await setPublicationState(request, 'published')
+  await waitUntilPublic(request)
 })
 
 test('before: the public site serves the bundled artwork', async ({ page, request }) => {

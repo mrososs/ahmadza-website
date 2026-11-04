@@ -2,8 +2,9 @@
 import type { ContentListResult } from '~/types/content'
 
 const route = useRoute()
+const requestFetch = useRequestFetch()
 const query = shallowRef(typeof route.query.q === 'string' ? route.query.q : '')
-const { data } = await useAsyncData('videos-directory', () => $fetch<ContentListResult>('/api/content', { query: { type: 'video', limit: 30 } }))
+const { data } = await useAsyncData('videos-directory', () => requestFetch<ContentListResult>('/api/content', { query: { type: 'video', limit: 30 } }))
 const visible = computed(() => {
   const needle = query.value.trim().toLocaleLowerCase('ar')
   return (data.value?.items || []).filter(item => !needle || `${item.title} ${item.excerpt}`.toLocaleLowerCase('ar').includes(needle))

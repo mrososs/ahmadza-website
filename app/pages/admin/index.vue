@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { FilePlus2 } from '@lucide/vue'
+import { Eye, FilePlus2 } from '@lucide/vue'
 import { contentTypePluralLabels, contentTypes } from '~/types/content'
 import { publishStatuses, publishStatusLabels } from '~/types/admin'
 
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 useHead({ title: 'لوحة التحكم | موقع أحمد الزهراني' })
 
+const { preview } = useAdminSession()
+const { data: publication } = useAdminPublication()
 const { data: stats, error, status, refresh } = await useAsyncData('admin-stats', async () => (await useAdminRepository()).stats(), { server: false })
 const formatDate = (iso: string) => new Intl.DateTimeFormat('ar', { dateStyle: 'medium' }).format(new Date(iso))
 </script>
@@ -16,6 +18,21 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat('ar', { dateStyle: '
       <h1 class="admin-title">لوحة التحكم</h1>
       <NuxtLink to="/admin/content/new" class="admin-button admin-button--primary"><FilePlus2 :size="18" aria-hidden="true" /> مادة جديدة</NuxtLink>
     </header>
+
+    <section class="admin-card site-preview" aria-labelledby="site-preview-title">
+      <div class="site-preview__body">
+        <h2 id="site-preview-title" class="admin-card__title">معاينة الموقع</h2>
+        <p class="admin-muted">تصفّح الموقع الحقيقي كما سيراه الزوار، بما فيه المقالات والملفات، قبل نشره وبعده.</p>
+        <p v-if="publication" class="site-preview__state" role="status">
+          <span class="site-preview__dot" :class="{ 'site-preview__dot--live': publication.mode === 'published' }" aria-hidden="true" />
+          {{ publication.mode === 'published' ? 'الموقع منشور للجمهور' : 'الموقع قيد التجهيز' }}
+          <NuxtLink :to="{ path: '/admin/branding', hash: '#publication' }" class="admin-link">إدارة حالة النشر</NuxtLink>
+        </p>
+      </div>
+      <button type="button" class="admin-button admin-button--primary site-preview__action" :disabled="preview.opening.value" @click="preview.openSite">
+        <Eye :size="22" aria-hidden="true" /> معاينة الموقع
+      </button>
+    </section>
 
     <p v-if="status === 'pending' && !stats" class="admin-muted" role="status">جارٍ التحميل…</p>
     <div v-else-if="error" class="admin-alert admin-alert--error" role="alert">

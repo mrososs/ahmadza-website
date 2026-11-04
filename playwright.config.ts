@@ -2,8 +2,9 @@ import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   testDir: './tests',
-  // Needs a local Supabase stack; run with `npm run test:e2e:branding`.
-  testIgnore: '**/tests/branding/**',
+  // These need a local Supabase stack (`npm run test:e2e:branding`, `npm run test:e2e:publication`) or a server forced into
+  // maintenance (`npm run test:e2e:maintenance`), so each has its own config.
+  testIgnore: ['**/tests/branding/**', '**/tests/publication/**', '**/tests/maintenance/**'],
   globalSetup: './tests/global-setup.ts',
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),

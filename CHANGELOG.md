@@ -12,6 +12,7 @@ All notable changes to this project are documented in this file. The format foll
 - SEO metadata, sitemap, robots rules, accessible states, responsive layouts, and Playwright coverage.
 - Contemporary Accession Folio design system with self-hosted Arabic fonts.
 - In-page book reader (pdf.js canvas) with page navigation, page jump, zoom and RTL arrow keys.
+- Private launch: the site is hidden behind a server-side maintenance gate until the owner publishes it («حالة نشر الموقع» in `/admin/branding`, with confirmation dialogs). Visitors get the Arabic «قريبًا بإذن الله» page (`503`, `noindex`, `no-store`) on every page, API and file; `/robots.txt` and the sitemap follow the state. Signed-in admins preview the real site on the real domain through a database-issued, revocable session (HttpOnly cookie) with a «معاينة الموقع» action on the dashboard. See `docs/LAUNCH.md` and ADR 0004.
 - `/admin/branding`: the owner can replace the header logo and the hero image (preview, validation, warnings, reset to the bundled artwork) and the public site shows the change immediately, without a redeploy.
 
 ### Changed
@@ -24,6 +25,9 @@ All notable changes to this project are documented in this file. The format foll
 - Downloading is an opt-in per book: the admin book form has "السماح بتنزيل الكتاب" (off by default); when it is on, the book page shows a "تنزيل PDF" button next to the reader.
 
 ### Security
+
+- Migration `20261104000100_site_publication.sql`: anonymous reads of content and categories (and everything that selects through them, including published-video signing) now require the site to be published or a valid admin preview token, so the public Supabase key cannot be used to read content around the gate; `site.publication` is owner-write only and fails closed; preview sessions are stored hashed behind security-definer functions and revoked on sign-out or deactivation.
+- The `publications` storage bucket can no longer be listed by anonymous users (its select policy allowed enumerating every file, drafts included); files are still served by exact public URL.
 
 - `site_settings` writes are narrowed from "any active admin" to owners and the two branding keys; a check constraint pins branding values to files in the new `site-branding` bucket, which only owners can write (PNG/WebP, 5 MB, unique non-overwritable paths).
 - Anonymous database access is limited to published content and public settings; all writes require an active authenticated admin profile.

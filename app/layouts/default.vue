@@ -17,5 +17,6 @@ const latest = computed(() => items.value.slice(0, 5))
       <slot />
     </main>
     <AppFooter />
+    <PreviewBar />
   </div>
 </template>

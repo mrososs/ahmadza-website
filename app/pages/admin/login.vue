@@ -73,7 +73,7 @@ async function submit() {
         </form>
         <p class="admin-login-links">
           <NuxtLink to="/admin/forgot-password" class="admin-backlink">نسيت كلمة المرور؟</NuxtLink>
-          <NuxtLink to="/" class="admin-backlink">العودة إلى الموقع</NuxtLink>
+          <a href="/" class="admin-backlink">العودة إلى الموقع</a>
         </p>
       </section>
     </main>

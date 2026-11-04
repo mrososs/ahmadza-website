@@ -6,6 +6,7 @@ export function useAdminSession() {
   const profile = useState<AdminProfile | null>('admin-profile', () => null)
   const checked = useState('admin-session-checked', () => false)
   const mode = useState<AdminMode>('admin-mode', () => 'unconfigured')
+  const preview = usePreviewAccess()
 
   async function restore(): Promise<AdminProfile | null> {
     const resolved = await useAdminBackend()
@@ -14,6 +15,8 @@ export function useAdminSession() {
     if (!checked.value) {
       try {
         profile.value = await resolved.backend.auth.restore()
+        // A returning admin gets a fresh preview session without having to sign in again. Best effort: the console works without it.
+        if (profile.value && resolved.mode === 'supabase') void preview.sync()
       }
       catch (cause) {
         console.error('[admin] session restore failed', cause)
@@ -29,11 +32,14 @@ export function useAdminSession() {
     if (!backend) throw new AdminError('لوحة التحكم غير مهيأة بعد.')
     profile.value = await backend.auth.signIn(email, password)
     checked.value = true
+    await preview.sync()
     return profile.value
   }
 
   async function signOut(): Promise<void> {
     const { backend } = await useAdminBackend()
+    // Revoke the preview session first: signing out must also take the unpublished site away from this browser.
+    await preview.end()
     await backend?.auth.signOut()
     profile.value = null
   }
@@ -55,8 +61,9 @@ export function useAdminSession() {
     if (!backend) throw new AdminError('لوحة التحكم غير مهيأة بعد.')
     profile.value = await backend.auth.updatePassword(password)
     checked.value = true
+    await preview.sync()
     return profile.value
   }
 
-  return { profile, mode, restore, signIn, signOut, requestPasswordReset, completeRecovery, updatePassword }
+  return { profile, mode, preview, restore, signIn, signOut, requestPasswordReset, completeRecovery, updatePassword }
 }

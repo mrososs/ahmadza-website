@@ -2,12 +2,13 @@
 import { contentTypes, contentTypeLabels, type ContentListResult, type ContentType } from '~/types/content'
 
 const route = useRoute()
+const requestFetch = useRequestFetch()
 const query = shallowRef(typeof route.query.q === 'string' ? route.query.q : '')
 const selectedType = computed(() => contentTypes.includes(route.query.type as ContentType) ? route.query.type as ContentType : undefined)
 const request = computed(() => ({ q: typeof route.query.q === 'string' ? route.query.q : '', type: selectedType.value, limit: 50 }))
 const { data, status, error } = await useAsyncData(
   () => `search-${request.value.q}-${request.value.type || 'all'}`,
-  () => $fetch<ContentListResult>('/api/content', { query: request.value }),
+  () => requestFetch<ContentListResult>('/api/content', { query: request.value }),
   { watch: [request] },
 )
 

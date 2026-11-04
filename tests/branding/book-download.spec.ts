@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { configured, owner, seedAdmin, serviceHeaders, supabaseUrl } from './support'
+import { configured, owner, seedAdmin, serviceHeaders, setPublicationState, supabaseUrl, waitUntilPublic } from './support'
 
 // Same local Supabase stack as branding.spec.ts: the editor's checkbox goes through the real admin adapter into
 // metadata.downloadAllowed, and the real Storage endpoint is asked for the attachment.
@@ -19,6 +19,9 @@ async function metadata(page: Page) {
 
 test.beforeAll(async ({ request }) => {
   await seedAdmin(request, owner)
+  // The book page is hidden until the site is published.
+  await setPublicationState(request, 'published')
+  await waitUntilPublic(request)
   const { 'content-type': _ignored, ...uploadHeaders } = serviceHeaders()
   const upload = await request.post(`${supabaseUrl}/storage/v1/object/publications/${pdfPath}`, { headers: { ...uploadHeaders, 'x-upsert': 'true' }, multipart: { file: { name: 'book.pdf', mimeType: 'application/pdf', buffer: smallPdf } } })
   expect(upload.ok(), 'the test PDF uploads').toBe(true)
