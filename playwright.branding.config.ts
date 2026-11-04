@@ -22,7 +22,8 @@ export default defineConfig({
   projects: [{ name: 'desktop', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 1000 } } }],
   webServer: {
     command: `npx nuxt dev --host 127.0.0.1 --port ${port}`,
-    url: `http://127.0.0.1:${port}`,
+    // Not "/": a fresh stack starts in maintenance (503) until the suite publishes it in beforeAll.
+    url: `http://127.0.0.1:${port}/robots.txt`,
     env: { NUXT_SUPABASE_URL: supabaseUrl, NUXT_SUPABASE_PUBLISHABLE_KEY: publishableKey, NUXT_PUBLIC_SUPABASE_URL: supabaseUrl, NUXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publishableKey },
     reuseExistingServer: false,
     timeout: 300_000,
