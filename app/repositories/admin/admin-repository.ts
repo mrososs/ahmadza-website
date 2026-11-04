@@ -9,6 +9,7 @@ import type {
   ContentDraft,
 } from '~/types/admin'
 import type { BrandingImage, BrandingSlot, PreparedBrandingImage, SiteBranding } from '~/types/branding'
+import type { PublicationMode, PublicationRecord } from '~/types/publication'
 import type { MediaKind } from '~/utils/media-upload'
 
 /** A video that reached private storage, ready to be saved on a record. */
@@ -37,6 +38,8 @@ export interface AdminAuth {
   restore(): Promise<AdminProfile | null>
   signIn(email: string, password: string): Promise<AdminProfile>
   signOut(): Promise<void>
+  /** The signed-in admin's Supabase access token, or null when there is no session (and always in the demo sandbox). */
+  accessToken(): Promise<string | null>
   /** Always resolves for well-formed addresses so the form cannot reveal which emails have accounts. */
   requestPasswordReset(email: string, redirectTo: string): Promise<void>
   /** Exchanges the one-time recovery code for a session. Resolves true when a session is available. */
@@ -74,6 +77,13 @@ export interface AdminRepository {
   saveBrandingImage(slot: BrandingSlot, image: PreparedBrandingImage, onProgress?: (percent: number) => void): Promise<BrandingImage>
   /** Owners only. Removes the override so the slot shows the bundled image again, and returns that image. Uploaded files are kept. */
   resetBrandingImage(slot: BrandingSlot): Promise<BrandingImage>
+  /** Whether the site is public, and who last changed it. A site that has never been published reads as maintenance. */
+  getPublication(): Promise<PublicationRecord>
+  /**
+   * Owners only. Publishes the site or returns it to maintenance. The database stamps who and when, and an editor's attempt
+   * is refused by row-level security, so a caller that is not an owner gets an AdminError and nothing changes.
+   */
+  setPublication(mode: PublicationMode): Promise<PublicationRecord>
 }
 
 export interface AdminBackend {

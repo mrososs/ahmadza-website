@@ -13,8 +13,10 @@ import type {
 } from '~/types/admin'
 import { publishStatuses } from '~/types/admin'
 import type { BrandingImage, BrandingSlot, PreparedBrandingImage, SiteBranding } from '~/types/branding'
+import { publicationSettingKey, type PublicationMode, type PublicationRecord } from '~/types/publication'
 import { brandingBucket, brandingExtension, brandingSettingKeys, brandingSpecs, brandingStorageBase, defaultSiteBranding, validateBrandingFile } from '~/utils/branding'
 import { parseBrandingRows } from '~/utils/branding-rows'
+import { parsePublicationMode } from '~/utils/publication'
 import { mediaExtension, mediaSpecs, validateMediaFile, type MediaKind } from '~/utils/media-upload'
 import { bodyToDraftHtml, draftToBody, draftToMetadata, isoToLocalInput, localInputToIso, metadataToDraftFields } from '~/utils/admin-content'
 import { sanitizeRichTextInBrowser } from '~/utils/rich-text-client'
@@ -69,6 +71,13 @@ const profileRowSchema = z.object({
   display_name: z.string(),
   role: z.enum(['owner', 'editor']),
   active: z.boolean(),
+})
+
+const publicationRowSchema = z.object({
+  value: z.unknown(),
+  updated_at: z.string(),
+  // Embedded through the `updated_by` foreign key; null when the author's profile no longer exists.
+  admin_profiles: z.object({ display_name: z.string() }).nullable(),
 })
 
 const MEDIA_BUCKET = 'publications'
@@ -163,6 +172,11 @@ class SupabaseAdminAuth implements AdminAuth {
 
   async signOut(): Promise<void> {
     await this.client.auth.signOut()
+  }
+
+  async accessToken(): Promise<string | null> {
+    const { data } = await this.client.auth.getSession()
+    return data.session?.access_token ?? null
   }
 
   async requestPasswordReset(email: string, redirectTo: string): Promise<void> {
@@ -482,6 +496,29 @@ class SupabaseAdminRepository implements AdminRepository {
     // Row-level security hides rows from an unauthorized caller instead of raising, so confirm the override is really gone.
     if ((await this.getSiteBranding())[slot].custom) throw new AdminError('ليست لديك صلاحية لتغيير هوية الموقع. هذه الصفحة للمالك فقط.')
     return defaultSiteBranding()[slot]
+  }
+
+  async getPublication(): Promise<PublicationRecord> {
+    const { data, error } = await this.client
+      .from('site_settings')
+      .select('value, updated_at, admin_profiles(display_name)')
+      .eq('key', publicationSettingKey)
+      .maybeSingle()
+    if (error) throw failure(error, 'تعذر تحميل حالة نشر الموقع.')
+    // No row: the site has never been published, which is maintenance.
+    if (!data) return { mode: 'maintenance', configured: false, updatedAt: null, updatedByName: null }
+    const row = publicationRowSchema.safeParse(data)
+    if (!row.success) throw new AdminError('وصلت من قاعدة البيانات بيانات غير متوقعة. حدّث الصفحة وحاول مرة أخرى.')
+    return { mode: parsePublicationMode(row.data.value), configured: true, updatedAt: row.data.updated_at, updatedByName: row.data.admin_profiles?.display_name ?? null }
+  }
+
+  async setPublication(mode: PublicationMode): Promise<PublicationRecord> {
+    const { error } = await this.client.from('site_settings').upsert({ key: publicationSettingKey, value: { mode }, public_readable: true }, { onConflict: 'key' })
+    if (error) throw failure(error, 'تعذر تغيير حالة نشر الموقع. لم يتغير شيء.')
+    // Read back what is really stored: the page must show the state visitors will get, not the state that was requested.
+    const record = await this.getPublication()
+    if (record.mode !== mode) throw new AdminError('ليست لديك صلاحية لتغيير حالة نشر الموقع. هذا الإجراء للمالك فقط.')
+    return record
   }
 
   async listCategories(): Promise<AdminCategory[]> {

@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ExternalLink, FilePlus2, LayoutDashboard, Library, LogOut, Menu, Palette, X } from '@lucide/vue'
+import { Eye, FilePlus2, LayoutDashboard, Library, LogOut, Menu, Palette, X } from '@lucide/vue'
 import type { Component } from 'vue'
 import { contentTypePluralLabels, contentTypes } from '~/types/content'
 import '~/assets/css/admin.css'
 
 const route = useRoute()
-const { profile, mode, signOut } = useAdminSession()
+const { profile, mode, signOut, preview } = useAdminSession()
 const { notice, clear } = useAdminNotice()
 const isOpen = shallowRef(false)
 
@@ -72,7 +72,7 @@ useSeoMeta({ robots: 'noindex, nofollow' })
           </li>
         </ul>
       </template>
-      <a href="/" class="admin-nav__site"><ExternalLink :size="20" aria-hidden="true" />عرض الموقع</a>
+      <button type="button" class="admin-nav__site" :disabled="preview.opening.value" @click="preview.openSite"><Eye :size="20" aria-hidden="true" />معاينة الموقع</button>
       <div class="admin-nav__user">
         <span v-if="profile"><strong>{{ profile.displayName }}</strong><small>{{ profile.role === 'owner' ? 'مالك الموقع' : 'محرّر' }}</small></span>
         <button type="button" class="admin-nav__logout" @click="logout"><LogOut :size="20" aria-hidden="true" />تسجيل الخروج</button>

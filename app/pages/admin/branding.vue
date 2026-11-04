@@ -19,7 +19,9 @@ async function onChanged() {
 <template>
   <div>
     <header class="admin-pagehead"><h1 class="admin-title">هوية الموقع</h1></header>
-    <p class="admin-muted branding-intro">يتحكم هذا القسم بالشعار وصورة الواجهة الرئيسية. تظهر التغييرات في الموقع فور حفظها، دون تعديل الشيفرة أو إعادة النشر. كل صورة مستقلة عن الأخرى.</p>
+    <p class="admin-muted branding-intro">من هنا تتحكم بحالة نشر الموقع، وبالشعار وصورة الواجهة الرئيسية. تظهر تغييرات الشعار والصورة في الموقع فور حفظها، دون تعديل الشيفرة أو إعادة النشر. كل صورة مستقلة عن الأخرى.</p>
+
+    <AdminPublicationPanel :can-edit="canEdit" />
 
     <p v-if="!canEdit" class="admin-alert admin-alert--warning" role="status">تغيير هوية الموقع متاح لمالك الموقع فقط. يمكنك الاطلاع على الصور الحالية دون تعديلها.</p>
 
